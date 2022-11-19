@@ -4,27 +4,25 @@ import bcrypt from "bcrypt";
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
   },
   email: {
     type: String,
-    required: true,
   },
   password: {
     type: String,
     required: true,
   },
-  sdt: String,
+  phone: String,
   avatar: String,
   role: {
     type: String,
-    required: true,
   },
   job: {
-    type: String,
-    required: true,
+    type: Array,
   },
-  allowUtils: Array,
+  verification: {
+    type: String,
+  },
 });
 
 userSchema.pre("save", async function (next) {

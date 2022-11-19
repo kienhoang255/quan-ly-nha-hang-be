@@ -2,8 +2,10 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import { UserModel } from "../models/UserModel.js";
+import { emailValidate } from "../middlewares/userValidate.js";
 
-dotenv.config();
+const checkVerification = (data) =>
+  data.verification === "true" ? true : false;
 
 export const getResigter = async (req, res) => {
   try {
@@ -16,17 +18,38 @@ export const getResigter = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const newUser = req.body;
-
-    const user = new UserModel(newUser);
-    const findUser = await UserModel.findOne({ email: req.body.email });
-    console.log(findUser);
+    const { username, email, password, phone, role, job, verification } =
+      req.body;
+    const userEmail = new UserModel({
+      username,
+      email,
+      password,
+      role,
+      job,
+      verification,
+    });
+    const userPhone = new UserModel({
+      username,
+      phone: email,
+      password,
+      role,
+      job,
+      verification,
+    });
+    const findUser = await UserModel.findOne({
+      $or: [{ email }, { phone: email }],
+    });
     if (findUser) {
-      return res.json({ message: "Email already exists" });
+      res.status(400).json({ message: "Email already exists" });
     } else {
-      await user.save();
+      if (emailValidate(req.body.email)) {
+        await userEmail.save();
+        res.status(200).json({ message: "Create user successful!", findUser });
+      } else {
+        await userPhone.save();
+        res.status(200).json({ message: "Create user successful!", findUser });
+      }
     }
-    res.status(200).json({ message: "Create user successful!" });
   } catch (error) {
     res.status(500).json({ error: error });
   }
@@ -51,42 +74,42 @@ export const updateUser = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const foundUser = await UserModel.findOne({ email: email });
+    const foundUser = await UserModel.findOne({
+      $or: [{ email }, { phone: email }],
+    });
 
     if (foundUser) {
-      const result = await foundUser.comparePassword(password);
-      if (result) {
-        let accessToken = jwt.sign(
-          {
-            _id: foundUser._id,
+      if (checkVerification(foundUser)) {
+        const result = await foundUser.comparePassword(password);
+        if (result) {
+          let accessToken = jwt.sign(
+            {
+              _id: foundUser._id,
+              role: foundUser.role,
+              job: foundUser.job,
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: "4h",
+            }
+          );
+          res.status(200).json({
+            username: foundUser.username,
+            email: foundUser.email,
+            phone: foundUser.phone,
             role: foundUser.role,
             job: foundUser.job,
-          },
-          process.env.ACCESS_TOKEN_SECRET,
-          {
-            expiresIn: "7d",
-          }
-        );
-        let refreshToken = jwt.sign(
-          {
-            _id: foundUser._id,
-            role: foundUser.role,
-            job: foundUser.job,
-          },
-          process.env.REFRESH_TOKEN_SECRET
-        );
-        res.status(200).json({
-          username: foundUser.username,
-          email: foundUser.email,
-          role: foundUser.role,
-          job: foundUser.job,
-          accessToken,
-        });
+            accessToken,
+          });
+        } else {
+          res
+            .status(401)
+            .json({ message: "Email and password are not correct!" });
+        }
       } else {
-        res
-          .status(401)
-          .json({ message: "Email and password are not correct!" });
+        res.status(401).json({
+          message: "Your account is not verified, need resigter for verified",
+        });
       }
     } else {
       res.status(401).json({ message: "Email and password are not correct!" });

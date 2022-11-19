@@ -8,13 +8,15 @@ import jwt from "jsonwebtoken";
  * Refresh token -> Khi access token hết hạn refresh token để tạo mới access token,...
  */
 export const authorizationToken = async (req, res, next) => {
-  const { accessToken } = req.body;
+  // console.log(req.headers.authorization);
+  const accessToken = req.header("Authorization").replace("Bearer ", "");
   jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
     if (err) {
       res.status(403).json({ err: "You are not authorized!" });
     } else {
-      res.status(200).json({ data });
       next();
     }
+    // console.log(data);
+    // next();
   });
 };

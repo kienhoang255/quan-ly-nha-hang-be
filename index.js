@@ -3,7 +3,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import user from "./routers/users.js";
+import users from "./routers/users.js";
+import shift from "./routers/shift.js";
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -15,7 +16,8 @@ app.use(bodyParser.json({ limit: "30mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "30mb" }));
 app.use("/", cors());
 
-app.use("/users", user);
+app.use("/users", users);
+app.use("/shift", shift);
 
 mongoose
   .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
