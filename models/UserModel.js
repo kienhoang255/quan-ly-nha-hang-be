@@ -12,13 +12,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  phone: String,
+  phone: {
+    type: String,
+  },
   avatar: String,
   role: {
     type: String,
   },
   job: {
     type: Array,
+  },
+  address: {
+    type: String,
   },
   verification: {
     type: String,
@@ -44,14 +49,14 @@ userSchema.pre("update", async function (next) {
   }
 });
 
-userSchema.methods.comparePassword = async function (password) {
-  if (!password) throw new Error("Password is missing,can not compare");
-  try {
-    const result = await bcrypt.compare(password, this.password);
-    return result;
-  } catch (error) {
-    console.log("Error while comparing password!", error.message);
-  }
-};
+// userSchema.methods.comparePassword = async function (password) {
+//   if (!password) throw new Error("Password is missing,can not compare");
+//   try {
+//     const result = await bcrypt.compare(password, this.password);
+//     return result;
+//   } catch (error) {
+//     console.log("Error while comparing password!", error.message);
+//   }
+// };
 
 export const UserModel = mongoose.model("users", userSchema);

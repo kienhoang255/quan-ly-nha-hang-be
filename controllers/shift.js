@@ -17,8 +17,8 @@ const isCheckIn = (data, staff_id) => {
 export const checkIn = async (res, req) => {
   try {
     const staff = {
-      staff_id: res.body._id,
-      time: `${res.body.hour}h${res.body.minute}m`,
+      staff_id: res?.body._id,
+      time: `${res?.body.hour}h${res?.body.minute}m`,
     };
     const session = distinguish(res.body.hour);
     const newShift = ShiftModel({
@@ -29,21 +29,27 @@ export const checkIn = async (res, req) => {
       year: res.body.year,
     });
 
-    const findDate = await ShiftModel.findOne({
-      day: res.body.day,
-      month: res.body.month,
-      year: res.body.year,
-      session: session,
+    const findShift = await ShiftModel.findOne({
+      $and: [
+        { day: res.body.day },
+        { month: res.body.month },
+        { year: res.body.year },
+        { session: session },
+      ],
     });
 
-    if (findDate) {
-      if (isCheckIn(findDate, res.body._id)) {
+    if (findShift) {
+      if (isCheckIn(findShift, res.body._id)) {
         req.status(200).json({ message: "Da check-in" });
       } else {
         await ShiftModel.findOneAndUpdate(
           {
-            time: res.body.date,
-            session: session,
+            $and: [
+              { day: res.body.day },
+              { month: res.body.month },
+              { year: res.body.year },
+              { session: session },
+            ],
           },
           { $push: { staff: staff } }
         );
