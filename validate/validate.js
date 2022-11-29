@@ -27,3 +27,5 @@ export const isNull = (data) => {
 export const isNumber = (data) => Number(data);
 
 export const isMax = (data, max) => data > max;
+
+export const isNegative = (data) => data > 0;

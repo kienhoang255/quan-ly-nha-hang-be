@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-const userSchema = new mongoose.Schema({
+const ClientSchema = new mongoose.Schema({
   username: {
     type: String,
   },
@@ -15,13 +15,6 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
   },
-  avatar: String,
-  role: {
-    type: String,
-  },
-  job: {
-    type: Array,
-  },
   address: {
     type: String,
   },
@@ -30,7 +23,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.pre("save", async function (next) {
+ClientSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(this.password, salt);
@@ -39,14 +32,4 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.pre("update", async function (next) {
-  if (this.isModified("password")) {
-    bcrypt.hash(this.password, 10, (err, hash) => {
-      if (err) return next(err);
-      this.password = hash;
-      next();
-    });
-  }
-});
-
-export const UserModel = mongoose.model("users", userSchema);
+export const ClientModel = mongoose.model("client", ClientSchema);

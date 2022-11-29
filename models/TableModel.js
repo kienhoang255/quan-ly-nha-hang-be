@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const BillSchema = mongoose.Schema({
   numOfPeople: { type: Number },
   id_bill: { type: String },
+  name: { type: String },
   status: { type: String, default: "empty" },
   stage: { type: Number },
   special: { type: String },

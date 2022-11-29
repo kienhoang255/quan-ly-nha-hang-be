@@ -20,3 +20,7 @@ export const updateTableStatusService = (data, status) => {
     { status: status }
   );
 };
+
+export const findStageTableService = (stage) => {
+  return TableModel.find({ stage: stage });
+};

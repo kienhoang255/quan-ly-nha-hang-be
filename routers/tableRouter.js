@@ -1,13 +1,8 @@
 import express from "express";
 import {
   createTableController,
-  delTable,
-  findTable,
-  findTableEmpty,
-  findTableStage,
-  getTable,
   updateTableStatusController,
-} from "../controllers/table.js";
+} from "../controllers/tableController.js";
 import { createTableDto } from "../dtos/tableDto.js";
 import {
   createTableValidate,
@@ -43,11 +38,5 @@ router.put("/status", async (req, res) => {
     res.status(500).json(error);
   }
 });
-
-router.get("/get", getTable);
-router.post("/find", findTable);
-router.post("/find-stage", findTableStage);
-router.get("/find-empty", findTableEmpty);
-router.delete("/delete", delTable);
 
 export default router;

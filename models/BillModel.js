@@ -5,7 +5,7 @@ const BillSchema = new mongoose.Schema(
     id_table: {
       type: String,
     },
-    id_user: {
+    id_client: {
       type: String,
     },
     orders: {
