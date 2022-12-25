@@ -1,9 +1,4 @@
-import {
-  clientEmail,
-  clientPhone,
-  createClientService,
-  findOneClientService,
-} from "../services/clientService.js";
+import clientService from "../services/clientService.js";
 import { comparePassword } from "../utils/comparePassword.js";
 import { setAccessToken } from "../utils/setToken.js";
 import { isEmail } from "../validate/validate.js";
@@ -11,48 +6,38 @@ import { isEmail } from "../validate/validate.js";
 const checkVerification = (data) =>
   data.verification === "true" ? true : false;
 
-export const findOneClientController = async (data) => {
+const findOne = async (data) => {
   const findClient = { $or: [{ email: data.email }, { phone: data.email }] };
-  return await findOneClientService(findClient);
+  return await clientService.findOne(findClient);
 };
 
-export const createClientController = async (data) => {
+const create = async (data) => {
   let result;
-  const findClient = await findOneClientController(data);
-  const EmailClient = clientEmail(data);
-  const PhoneClient = clientPhone(data);
+  const findClient = await findOne(data);
+  const EmailClient = clientService.clientEmail(data);
+  const PhoneClient = clientService.clientPhone(data);
   if (findClient === null) {
-    /**
-     * Check Client use email or phone to create
-     * Then create
-     */
     if (!isEmail(data.email)) {
-      result = await createClientService(PhoneClient);
+      result = await clientService.create(PhoneClient);
     } else {
-      result = await createClientService(EmailClient);
+      result = await clientService.create(EmailClient);
     }
   }
   return result;
 };
 
-export const updateClientController = async () => {};
+const update = async () => {};
 
-export const findClientController = async () => {};
+const findId = async (data) => {
+  const { username, email, phone } = await clientService.findOne({
+    _id: data.id_client,
+  });
+  return { username, email, phone };
+};
 
-export const loginClientController = async (data) => {
+const login = async (data) => {
   let result;
-  const findClient = await findOneClientController(data);
-  /**
-   * Check verified account
-   * If it's verified => do login
-   * Else => Response Your account is not verified, need resigter for verified
-   */
-
-  /**
-   * If account is not exist => -1
-   * If doesn't verified => 1
-   * If password is not correct => 2
-   */
+  const findClient = await clientService.findOne(data);
   if (findClient) {
     if (checkVerification(findClient)) {
       const { _id, username, password, email, phone, address } = findClient;
@@ -70,3 +55,5 @@ export const loginClientController = async (data) => {
 
   return result;
 };
+
+export default { checkVerification, create, findId, findOne, update, login };

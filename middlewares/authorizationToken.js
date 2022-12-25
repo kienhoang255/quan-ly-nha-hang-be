@@ -10,4 +10,3 @@ export const authorizationToken = async (req, res, next) => {
     }
   });
 };
-

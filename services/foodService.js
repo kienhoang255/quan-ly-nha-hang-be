@@ -1,19 +1,25 @@
 import { FoodModel } from "../models/FoodModel.js";
 
-export const createFoodService = async (data) => {
+const create = async (data) => {
   const newFood = new FoodModel(data);
   await newFood.save();
   return newFood;
 };
 
-export const findFoodService = async (data) => {
+const find = async (data) => {
   return await FoodModel.find(data);
 };
 
-export const findOneFoodService = async (data) => {
+const findOne = async (data) => {
   return await FoodModel.findOne(data);
 };
 
-export const findOneFoodAndUpdateService = async (id, data) => {
+const findOneAndDel = async (data) => {
+  return await FoodModel.findOneAndDelete(data);
+};
+
+const findOneAndUpdate = async (id, data) => {
   return await FoodModel.findOneAndUpdate({ _id: id }, data);
 };
+
+export default { create, find, findOne, findOneAndUpdate, findOneAndDel };

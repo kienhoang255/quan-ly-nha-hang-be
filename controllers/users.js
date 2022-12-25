@@ -61,36 +61,45 @@ export const loginUserController = async (data) => {
    * If password is not correct => 2
    */
   if (findUser) {
-    if (checkVerification(findUser)) {
-      const { _id, username, password, role, email, phone, job, address } =
-        findUser;
-      const checkPassword = await comparePassword(data.password, password);
-      if (checkPassword) {
-        const createToken = await setAccessToken(username, role, job);
-        result = { createToken, username, role, email, phone, job, address };
-      } else {
-        result = 2;
-      }
+    // if (checkVerification(findUser)) {
+    const {
+      _id,
+      username,
+      password,
+      role,
+      email,
+      phone,
+      job,
+      address,
+      avatar,
+    } = findUser;
+    const checkPassword = await comparePassword(data.password, password);
+    if (checkPassword) {
+      const createToken = await setAccessToken(
+        username,
+        role,
+        job,
+        email,
+        phone,
+        address
+      );
+      result = {
+        createToken,
+        username,
+        role,
+        email,
+        phone,
+        job,
+        address,
+        avatar,
+      };
     } else {
-      result = 1;
+      result = 2;
     }
+    // } else {
+    //   result = 1;
+    // }
   } else result = -1;
 
   return result;
 };
-
-// export const updateUser = async (req, res) => {
-//   req.body.password = (await bcrypt.hash(req.body.password, 10)).toString();
-//   try {
-//     const updateUser = req.body;
-//     const id = req.body._id;
-
-//     await UserModel.findOneAndUpdate({ _id: id }, updateUser, {
-//       new: true,
-//     });
-
-//     res.status(200).json({ message: "Update successful!" });
-//   } catch (error) {
-//     res.status(500).json({ error: error });
-//   }
-// };

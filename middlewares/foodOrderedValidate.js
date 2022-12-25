@@ -1,6 +1,6 @@
 import { isNull } from "../validate/validate.js";
 
-export const createFoodOrderedValidate = (req, res, next) => {
+const create = (req, res, next) => {
   try {
     const id_table = req.body.id_table;
     const foods = req.body.foods;
@@ -16,14 +16,20 @@ export const createFoodOrderedValidate = (req, res, next) => {
 
     let checkIdFood = true;
     foods.forEach((element) => {
-      if (!isNull(element.id_food) || !isNull(element.quantity)) {
+      if (
+        !isNull(element.id_food) ||
+        !isNull(element.quantity) ||
+        !isNull(element.price)
+      ) {
         checkIdFood = false;
       }
       return checkIdFood;
     });
 
     if (!checkIdFood) {
-      return res.status(400).json("id_food or quantity is not received");
+      return res
+        .status(400)
+        .json("id_food or quantity or price is not received");
     }
 
     if (!isNull(id_bill)) {
@@ -35,7 +41,7 @@ export const createFoodOrderedValidate = (req, res, next) => {
   }
 };
 
-export const updateFoodOrderedValidate = (req, res, next) => {
+const update = (req, res, next) => {
   try {
     const id_foodOrdered = req.body.id_foodOrdered;
     if (!isNull(id_foodOrdered)) {
@@ -47,3 +53,5 @@ export const updateFoodOrderedValidate = (req, res, next) => {
     res.status(500).json({ error });
   }
 };
+
+export default { create, update };

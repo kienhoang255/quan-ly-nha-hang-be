@@ -1,9 +1,7 @@
 import express from "express";
-import {
-  createClientController,
-  loginClientController,
-} from "../controllers/clientController.js";
-import { createClientDto, loginClientDto } from "../dtos/clientDto.js";
+import { ClientController } from "../controllers/index.js";
+import { ClientDto } from "../dtos/index.js";
+
 import {
   createClientValidate,
   loginClientValidate,
@@ -13,8 +11,8 @@ const router = express.Router();
 
 router.post("/", createClientValidate, async (req, res) => {
   try {
-    const clientDto = createClientDto(req.body);
-    const createClient = await createClientController(clientDto);
+    const clientDto = ClientDto.create(req.body);
+    const createClient = await ClientController.create(clientDto);
     if (createClient === undefined) {
       res.status(400).json("Account already exist");
     } else {
@@ -27,9 +25,9 @@ router.post("/", createClientValidate, async (req, res) => {
 
 router.post("/login", loginClientValidate, async (req, res) => {
   try {
-    const clientDto = loginClientDto(req.body);
+    const clientDto = ClientDto.login(req.body);
 
-    const loginClient = await loginClientController(clientDto);
+    const loginClient = await ClientController.login(clientDto);
 
     if (loginClient === -1) {
       return res.status(400).json({ messageErr: "Account is not exist" });
@@ -47,6 +45,18 @@ router.post("/login", loginClientValidate, async (req, res) => {
     } else {
       return res.status(200).json(loginClient);
     }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const clientDto = ClientDto.find(req.params);
+    const findClient = await ClientController.findId(clientDto);
+    if (findClient) {
+      return res.status(200).json(findClient);
+    } else res.status(400).json("Not found client");
   } catch (error) {
     res.status(500).json(error);
   }

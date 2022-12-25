@@ -1,21 +1,7 @@
-import {
-  createBillService,
-  findOneAndUpdateBillService,
-  findOneBillService,
-} from "../services/billService.js";
-import {
-  findOneTableService,
-  updateTableStatusService,
-} from "../services/tableService.js";
-import { updateTableStatusController } from "./tableController.js";
-import {
-  createClientController,
-  findOneClientController,
-} from "./clientController.js";
-import {
-  findFOrderedService,
-  findOneAndDeleteFOService,
-} from "../services/foodOrderedService.js";
+import billService from "../services/billService.js";
+import foodOrderedService from "../services/foodOrderedService.js";
+import tableService from "../services/tableService.js";
+import { ClientController } from "./index.js";
 
 const client = (email) => {
   const result = {
@@ -29,56 +15,46 @@ const client = (email) => {
   return result;
 };
 
-export const createBillController = async (data) => {
-  /**
-   * findClient
-   * If exist => create bill
-   * If not, create client then create bill
-   */
+const create = async (data) => {
   let result;
-  const findClient = await findOneClientController(data);
-  console.log(findClient);
-  if (findClient !== null) {
+  const findClient = await ClientController.findOne(data);
+  if (findClient) {
     const newData = { id_client: findClient._id, id_table: data.id_table };
-
-    console.log(
-      "🚀 ~ file: billController.js ~ line 33 ~ createBillController ~ newData",
-      newData
+    const createBill1 = await findTableAndCreate(newData);
+    await tableService.findOneAndUpdate(
+      { _id: data.id_table },
+      { status: "using", $push: { id_bill: createBill1._id } }
     );
-    const createBill1 = await findTableAndCreateBillController(newData);
-    const test = await updateTableStatusController(
-      { id_table: data.id_table },
-      "using"
-    );
-    result = createBill1;
+    const table = await tableService.findOne({
+      _id: data.id_table,
+    });
+    result = { createBill1, table };
   } else {
-    const createClient = await createClientController(client(data.email));
+    const createClient = await ClientController.create(client(data.email));
     const newDataWhenCreateClient = {
-      email: createClient.email,
+      email: createClient.email || createClient.phone,
       id_table: data.id_table,
     };
-    const createBill2 = await createBillController(newDataWhenCreateClient);
-    result = createBill2;
+    result = await create(newDataWhenCreateClient);
   }
   return result;
 };
 
-export const findTableAndCreateBillController = async (data) => {
+const findTableAndCreate = async (data) => {
   let result;
-  const findTable = await findOneTableService(data);
+  const findTable = await tableService.findOne({
+    _id: data.id_table,
+  });
   if (findTable) {
-    const createBill = createBillService(data);
+    const createBill = billService.create(data);
     result = createBill;
   }
   return result;
 };
 
-export const preCheckOutBillController = async (data) => {
-  /**
-   * false means there is food cooking
-   */
+const preCheckOut = async (data) => {
   let result = true;
-  const checkFood = await findFOrderedService(data);
+  const checkFood = await foodOrderedService.find(data);
   checkFood.forEach((element) => {
     if (element.status === "cooking") result = false;
   });
@@ -86,23 +62,44 @@ export const preCheckOutBillController = async (data) => {
   return result;
 };
 
-export const checkOutBillController = async (data) => {
-  const findFood = await findFOrderedService(data);
-  const findTable = await findOneBillService(data);
-  await updateTableStatusService(findTable, "empty");
+const checkOut = async (data) => {
+  const findFood = await foodOrderedService.find(data);
+  const findTable = await billService.findOne(data);
+  await tableService.updateCheckout(findTable, "empty");
 
   let totalPrice = 0;
 
   findFood.forEach((foodOrdered) => {
     totalPrice += foodOrdered.price * foodOrdered.quantity;
-    findOneAndUpdateBillService(data, { $push: { orders: foodOrdered } });
-    findOneAndDeleteFOService({ _id: foodOrdered._id });
+    billService.findOneAndUpdate(data, {
+      $push: { orders: foodOrdered },
+    });
+    foodOrderedService.findOneAndDelete({ _id: foodOrdered._id });
   });
-  await findOneAndUpdateBillService(data, { totalPrice, status: "finished" });
+  await billService.findOneAndUpdate(data, {
+    totalPrice,
+    status: "finished",
+  });
+
+  return await tableService.findOne({ _id: findTable.id_table });
 };
 
-export const checkBillStatusController = async (data) => {};
+const checkStatus = async (data) => {};
 
-export const getBillController = async (data) => {
-  return await findOneBill(data);
+const getOne = async (data) => {
+  return await billService.findOne(data);
+};
+
+const getAllUsing = async () => {
+  return await billService.find({ status: "using" });
+};
+
+export default {
+  create,
+  findTableAndCreate,
+  preCheckOut,
+  checkStatus,
+  getOne,
+  getAllUsing,
+  checkOut,
 };

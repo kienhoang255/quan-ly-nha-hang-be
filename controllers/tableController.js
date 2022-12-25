@@ -1,15 +1,13 @@
 import { TableModel } from "../models/TableModel.js";
-import {
-  createTableService,
-  delTableService,
-  findOneTableService,
-  findStageTableService,
-  updateTableStatusService,
-} from "../services/tableService.js";
+import tableService from "../services/tableService.js";
 
-export const createTableController = async (data) => {
+const get = async () => {
+  return await tableService.find();
+};
+
+const create = async (data) => {
   const { numOfPeople, id_bill, status, stage, special } = data;
-  const findTable = await findStageTableService(data.stage);
+  const findTable = await tableService.findStage(data.stage);
   let count = 0;
   findTable.forEach((e) => (count += 1));
   const newData = {
@@ -20,26 +18,40 @@ export const createTableController = async (data) => {
     special,
     name: `${stage}-${count + 1}`,
   };
-  const create = await createTableService(newData);
+  const create = await tableService.create(newData);
   return create;
 };
 
-export const updateTableStatusController = async (id_table, status) => {
-  const updateTable = await updateTableStatusService(id_table, status);
+const updateStatus = async (id_table, status) => {
+  const updateTable = await tableService.updateStatus(id_table, status);
   return updateTable;
 };
 
-export const checkTableStatusController = async (data) => {
+const update = async (data) => {
+  await tableService.findOneAndUpdate({ _id: data._id }, data);
+
+  return await tableService.findOne({ _id: data._id });
+};
+
+const del = async (data) => {
+  return await tableService.del({ _id: data.id });
+};
+
+const checkStatus = async (data) => {
   let result;
-  const findTable = await findOneTableService({ _id: data.id_table });
+  const findTable = await tableService.findOne({
+    _id: data.id_table,
+  });
   if (findTable.status === "using") {
-    if (findTable.special === "true") {
-      result = true;
-    } else {
-      result = false;
-    }
+    // if (findTable.special === "true") {
+    //   result = true;
+    // } else {
+    result = false;
+    // }
   } else {
     result = true;
   }
   return result;
 };
+
+export default { get, create, update, del, updateStatus, checkStatus };

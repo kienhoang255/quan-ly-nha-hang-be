@@ -1,11 +1,13 @@
-export const createBillDto = (reqBody) => {
+const create = (reqBody) => {
   const { email, id_table } = reqBody;
   return { email, id_table };
 };
 
-export const getBillDto = (reqBody) => {
+const get = (reqBody) => {
   const { id_bill } = reqBody;
   return { id_bill };
 };
 
-export const addFoodToBill = (reqBody) => {};
+const addFoodToBill = (reqBody) => {};
+
+export default { create, get, addFoodToBill };

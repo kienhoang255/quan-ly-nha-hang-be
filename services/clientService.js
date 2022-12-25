@@ -1,6 +1,6 @@
 import { ClientModel } from "../models/ClientModel.js";
 
-export const clientEmail = (data) => {
+const clientEmail = (data) => {
   const { username, email, password, verification } = data;
   const clientEmail = {
     username,
@@ -11,7 +11,7 @@ export const clientEmail = (data) => {
   return clientEmail;
 };
 
-export const clientPhone = (data) => {
+const clientPhone = (data) => {
   const { username, email, password, verification } = data;
   const clientPhone = {
     username,
@@ -23,20 +23,22 @@ export const clientPhone = (data) => {
   return clientPhone;
 };
 
-export const createClientService = async (data) => {
+const create = async (data) => {
   const newClient = new ClientModel(data);
   await newClient.save();
   return newClient;
 };
 
-export const updateClientService = async (id, data) => {
+const update = async (id, data) => {
   return await ClientModel.findOneAndUpdate(id, data);
 };
 
-export const findClientService = async () => {
+const find = async () => {
   return await ClientModel.find();
 };
 
-export const findOneClientService = async (data) => {
+const findOne = async (data) => {
   return await ClientModel.findOne(data);
 };
+
+export default { clientEmail, clientPhone, create, update, find, findOne };

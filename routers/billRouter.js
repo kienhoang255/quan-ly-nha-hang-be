@@ -1,28 +1,25 @@
 import express from "express";
-import {
-  checkOutBillController,
-  createBillController,
-  getBillController,
-  preCheckOutBillController,
-} from "../controllers/billController.js";
-import { checkTableStatusController } from "../controllers/tableController.js";
-import { createBillDto, getBillDto } from "../dtos/billDto.js";
+import { BillController, TableController } from "../controllers/index.js";
+import { BillDto } from "../dtos/index.js";
 import { createBillValidate } from "../middlewares/billValidate.js";
 
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+  try {
+    const findBill = await BillController.getAllUsing();
+    res.status(200).json(findBill);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.post("/", createBillValidate, async (req, res) => {
   try {
-    const billDto = createBillDto(req.body);
-    /**
-     * If table have element special = true & status using or status = empty
-     * allow for check in
-     * If it's = false & status using
-     * block check in
-     */
-    const checkStatus = await checkTableStatusController(billDto);
+    const billDto = BillDto.create(req.body);
+    const checkStatus = await TableController.checkStatus(billDto);
     if (checkStatus) {
-      const createdBill = await createBillController(billDto);
+      const createdBill = await BillController.create(billDto);
       return res.status(200).json(createdBill);
     } else {
       return res
@@ -36,8 +33,8 @@ router.post("/", createBillValidate, async (req, res) => {
 
 router.post("/get-bill", async (req, res) => {
   try {
-    const billDto = getBillDto(req.body);
-    const getBill = await getBillController(billDto);
+    const billDto = BillDto.getBillDto(req.body);
+    const getBill = await BillController.get(billDto);
     res.status(200).json(getBill);
   } catch (error) {
     res.status(500).json(error);
@@ -46,11 +43,13 @@ router.post("/get-bill", async (req, res) => {
 
 router.post("/check-out", async (req, res) => {
   try {
-    const billDto = getBillDto(req.body);
-    const checkBill = await preCheckOutBillController(billDto);
+    const billDto = BillDto.get(req.body);
+    const checkBill = await BillController.preCheckOut(billDto);
     if (checkBill) {
-      await checkOutBillController(billDto);
-      return res.status(200).json({ message: "Good bye! See you later" });
+      const result = await BillController.checkOut(billDto);
+      return res
+        .status(200)
+        .json({ message: "Good bye! See you later", table: result });
     } else {
       return res.status(400).json("Still unserved food");
     }

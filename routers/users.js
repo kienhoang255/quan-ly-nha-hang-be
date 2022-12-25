@@ -62,4 +62,12 @@ router.post("/login", loginUserValidate, async (req, res) => {
   }
 });
 
+router.get("/test", authorizationToken, (req, res) => {
+  try {
+    res.status(200).json("cung kinh day");
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 export default router;

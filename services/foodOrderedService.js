@@ -1,22 +1,41 @@
 import { FoodOrderedModel } from "../models/FoodOrderedModel.js";
 
-export const createFoodOrderedService = async (data) => {
+const create = async (data) => {
   const newFOrdered = new FoodOrderedModel(data);
   await newFOrdered.save();
   return newFOrdered;
 };
 
-export const updateFoodOrderedStatusService = (data, status) => {
+const updateStatus = (data, status) => {
   return FoodOrderedModel.findOneAndUpdate(
     { _id: data.id_foodOrdered },
     { status: status }
   );
 };
 
-export const findFOrderedService = async (data) => {
+const find = async (data) => {
   return await FoodOrderedModel.find(data);
 };
 
-export const findOneAndDeleteFOService = async (data) => {
+const insertMulti = async (data) => {
+  return await FoodOrderedModel.insertMany(data).then((value) => {
+    return value;
+  });
+};
+
+const findOne = async (data) => {
+  return await FoodOrderedModel.findOne(data);
+};
+
+const findOneAndDelete = async (data) => {
   return await FoodOrderedModel.findOneAndDelete(data);
+};
+
+export default {
+  create,
+  updateStatus,
+  find,
+  findOneAndDelete,
+  findOne,
+  insertMulti,
 };

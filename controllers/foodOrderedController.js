@@ -1,41 +1,74 @@
-import {
-  createFoodOrderedService,
-  updateFoodOrderedStatusService,
-} from "../services/foodOrderedService.js";
-import { findOneFoodService } from "../services/foodService.js";
-import { findOneTableService } from "../services/tableService.js";
+import foodOrderedService from "../services/foodOrderedService.js";
+import foodService from "../services/foodService.js";
+import tableService from "../services/tableService.js";
 
-export const createFoodOrderedController = async (data) => {
-  const { id_table, id_bill, id_food, quantity } = data;
-  const { price } = await findOneFoodService({ _id: data.id_food });
-  return await createFoodOrderedService({
-    id_table,
-    id_bill,
-    id_food,
-    quantity,
-    price,
-  });
+const find = async () => {
+  return await foodOrderedService.find();
 };
 
-export const updateServedFoodOrderedController = async (data) => {
+const create = async (data) => {
   let result;
-  const { id_table, id_food } = await updateFoodOrderedStatusService(
+
+  result = await foodOrderedService.insertMulti(data).then((value) => value);
+
+  return result;
+};
+
+const createMulti = async (data) => {
+  let result;
+  const { id_table, id_bill, id_food, quantity } = data;
+};
+
+const findOne = async (data) => {
+  let result;
+  result = await foodService.findOne(data);
+  return result;
+};
+
+const updateServed = async (data) => {
+  let result;
+  const { id_table, id_food } = await foodOrderedService.updateStatus(
     data,
     "served"
   );
-  const { name: nameTable } = await findOneTableService({ id_table });
-  const { name: nameFood } = await findOneFoodService({ _id: id_food });
+  const { name: nameTable } = await tableService.findOne({ id_table });
+  const foodOrdered = await foodOrderedService.findOne({
+    _id: data.id_foodOrdered,
+  });
+  const { name: nameFood } = await foodService.findOne({
+    _id: id_food,
+  });
   result = {
-    nameTable,
+    foodOrdered,
     nameFood,
+    nameTable,
+    time: foodOrdered.updatedAt,
+    id_food,
   };
   return result;
 };
 
-export const updateCancelFoodOrderedController = async (data) => {
-  return await updateFoodOrderedStatusService(data, "cancel");
+const updateCancel = async (data) => {
+  await foodOrderedService.updateStatus(data, "cancel");
+  return await foodOrderedService.findOne({
+    _id: data.id_foodOrdered,
+  });
 };
 
-export const updateCancelAdminFoodOrderedController = async (data) => {
-  return await updateFoodOrderedStatusService(data, "cancel");
+const updateCancelAdmin = async (data) => {
+  return await foodOrderedService.updateStatus(data, "cancel");
+};
+
+const getFoodByBill = async (data) => {
+  return await foodOrderedService.find(data);
+};
+
+export default {
+  create,
+  findOne,
+  updateServed,
+  updateCancel,
+  updateCancelAdmin,
+  getFoodByBill,
+  find,
 };
