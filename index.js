@@ -14,7 +14,7 @@ import foodOrderedRouter from "./routers/foodOrderedRouter.js";
 import employeeRouter from "./routers/employeeRouter.js";
 
 dotenv.config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 const URI = process.env.DATABASE_URL;
 
 const app = express();
