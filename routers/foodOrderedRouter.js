@@ -1,4 +1,5 @@
 import express from "express";
+import Pusher from "pusher";
 import { FOController } from "../controllers/index.js";
 import { FODto } from "../dtos/index.js";
 import foodOrderedValidate from "../middlewares/foodOrderedValidate.js";
@@ -16,12 +17,17 @@ router.get("/", async (req, res) => {
 
 router.post("/", foodOrderedValidate.create, async (req, res) => {
   try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
+
     const foodOrdered = FODto.create(req.body);
-    // let result = [];
-    // foodOrdered.forEach((element) => {
     const food = await FOController.create(foodOrdered);
-    // result.push(food);
-    // });
+    pusher.trigger("FO", "FO_order-event", { food });
     res.status(200).json(food);
   } catch (error) {
     res.status(500).json(error);
@@ -30,9 +36,18 @@ router.post("/", foodOrderedValidate.create, async (req, res) => {
 
 router.put("/served", foodOrderedValidate.update, async (req, res) => {
   try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
+
     const foodOrderedDto = FODto.update(req.body);
-    const updateFOrdered = await FOController.updateServed(foodOrderedDto);
-    res.status(200).json(updateFOrdered);
+    const foodOrdered = await FOController.updateServed(foodOrderedDto);
+    pusher.trigger("FO", "FO_served-event", { foodOrdered });
+    res.status(200).json(foodOrdered);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -40,9 +55,17 @@ router.put("/served", foodOrderedValidate.update, async (req, res) => {
 
 router.put("/cancel", foodOrderedValidate.update, async (req, res) => {
   try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
     const foodOrderedDto = FODto.update(req.body);
-    const updateFOrdered = await FOController.updateCancel(foodOrderedDto);
-    res.status(200).json(updateFOrdered);
+    const foodOrdered = await FOController.updateCancel(foodOrderedDto);
+    pusher.trigger("FO", "FO_cancel-event", { foodOrdered });
+    res.status(200).json(foodOrdered);
   } catch (error) {
     res.status(500).json(error);
   }

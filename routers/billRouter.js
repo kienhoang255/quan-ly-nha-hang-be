@@ -1,4 +1,5 @@
 import express from "express";
+import Pusher from "pusher";
 import { BillController, TableController } from "../controllers/index.js";
 import { BillDto } from "../dtos/index.js";
 import { createBillValidate } from "../middlewares/billValidate.js";
@@ -16,10 +17,23 @@ router.get("/", async (req, res) => {
 
 router.post("/", createBillValidate, async (req, res) => {
   try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
     const billDto = BillDto.create(req.body);
     const checkStatus = await TableController.checkStatus(billDto);
     if (checkStatus) {
       const createdBill = await BillController.create(billDto);
+      pusher.trigger("table", "table-event", {
+        table: createdBill.table,
+      });
+      pusher.trigger("bill", "bill-event", {
+        bill: createdBill.createBill1,
+      });
       return res.status(200).json(createdBill);
     } else {
       return res
@@ -43,13 +57,21 @@ router.post("/get-bill", async (req, res) => {
 
 router.post("/check-out", async (req, res) => {
   try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
     const billDto = BillDto.get(req.body);
     const checkBill = await BillController.preCheckOut(billDto);
     if (checkBill) {
       const result = await BillController.checkOut(billDto);
-      return res
-        .status(200)
-        .json({ message: "Good bye! See you later", table: result });
+      pusher.trigger("table", "table-event", {
+        table: result,
+      });
+      return res.status(200).json({ message: "success", table: result });
     } else {
       return res.status(400).json("Still unserved food");
     }
