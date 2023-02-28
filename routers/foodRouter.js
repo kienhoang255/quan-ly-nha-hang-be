@@ -16,9 +16,39 @@ router.post("/", createFoodValidate, async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const findFood = await FoodController.find();
+    res.status(200).json(findFood);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/option/:option", async (req, res) => {
+  try {
+    const findFood = await FoodController.findDistinct(req.params.option);
+    res.status(200).json(findFood);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const query = req.query;
+    const findFood = await FoodController.find(query);
+    res.status(200).json(findFood);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/:_id", async (req, res) => {
+  try {
+    const query = req.query;
+    const params = req.params;
+    const findFood = await FoodController.find(params, query);
     res.status(200).json(findFood);
   } catch (error) {
     res.status(500).json(error);

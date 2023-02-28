@@ -5,8 +5,19 @@ const create = async (data) => {
   return createFood;
 };
 
-const find = async () => {
-  return await foodService.find();
+const find = async (data) => {
+  return await foodService.find(data);
+};
+
+const findOne = async (data) => {
+  return await foodService.findOne(data);
+};
+
+const findDistinct = async (option = "_id") =>
+  await foodService.findDistinct(option);
+
+const findById = async (data) => {
+  return await foodService.findOne({ _id: data });
 };
 
 const findOneAndUpdate = async (data) => {
@@ -18,4 +29,12 @@ const findOneAndDel = async (data) => {
   return await foodService.findOneAndDel({ _id: data._id });
 };
 
-export default { create, find, findOneAndUpdate, findOneAndDel };
+export default {
+  create,
+  find,
+  findDistinct,
+  findById,
+  findOneAndUpdate,
+  findOneAndDel,
+  findOne,
+};
