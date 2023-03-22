@@ -1,6 +1,6 @@
 import { UserModel } from "../models/UserModel.js";
 
-export const userEmail = (data) => {
+const userEmail = (data) => {
   const { username, email, password, role, job, verification } = data;
   const userEmail = {
     username,
@@ -13,7 +13,7 @@ export const userEmail = (data) => {
   return userEmail;
 };
 
-export const userPhone = (data) => {
+const userPhone = (data) => {
   const { username, email, password, role, job, verification } = data;
   const userPhone = {
     username,
@@ -27,16 +27,19 @@ export const userPhone = (data) => {
   return userPhone;
 };
 
-export const createUserService = async (data) => {
+const createUserService = async (data) => {
   const newUser = new UserModel(data);
   await newUser.save();
   return newUser;
 };
 
-export const findOneUserService = async (props) => {
-  return await UserModel.findOne(props);
+const findOneUserService = async (data) => {
+  return await UserModel.findOne(data);
 };
 
-// export const delTableService = (data) => {
-//   return TableModel.deleteOne(data);
-// };
+export default {
+  userEmail,
+  userPhone,
+  createUserService,
+  findOneUserService,
+};

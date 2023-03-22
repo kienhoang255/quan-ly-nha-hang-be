@@ -1,14 +1,11 @@
 import jwt from "jsonwebtoken";
 
-export const setAccessToken = (username, role, job, email, phone, address) => {
+export const setAccessToken = (_id, username, job) => {
   let accessToken = jwt.sign(
     {
+      _id,
       username,
-      role,
       job,
-      email,
-      phone,
-      address,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {

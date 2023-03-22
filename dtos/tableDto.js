@@ -1,11 +1,13 @@
 const create = (reqBody) => {
-  const { numOfPeople, id_bill, status, stage, special } = reqBody;
-  return { numOfPeople, id_bill, status, stage, special };
+  const { numOfPeople, stage, image1, image2, image3, image4, options } =
+    reqBody;
+  return { numOfPeople, stage, image1, image2, image3, image4, options };
 };
 
 const update = (reqBody) => {
-  const { numOfPeople, id_bill, _id, status, stage, special } = reqBody;
-  return { numOfPeople, id_bill, _id, status, stage, special };
+  const { _id, numOfPeople, stage, image1, image2, image3, image4, options } =
+    reqBody;
+  return { _id, numOfPeople, stage, image1, image2, image3, image4, options };
 };
 
 export default { create, update };

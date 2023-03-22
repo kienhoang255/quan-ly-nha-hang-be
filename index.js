@@ -12,6 +12,8 @@ import foodRouter from "./routers/foodRouter.js";
 import clientRouter from "./routers/clientRouter.js";
 import foodOrderedRouter from "./routers/foodOrderedRouter.js";
 import employeeRouter from "./routers/employeeRouter.js";
+import tableImageRoute from "./routers/TableImageRoute.js";
+import bookingRoute from "./routers/bookingRoute.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +33,8 @@ app.use("/bill", billRouter);
 app.use("/table", tableRouter);
 app.use("/food", foodRouter);
 app.use("/food-ordered", foodOrderedRouter);
+app.use("/table-image", tableImageRoute);
+app.use("/booking", bookingRoute);
 
 mongoose
   .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })

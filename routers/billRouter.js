@@ -5,10 +5,22 @@ import { BillDto } from "../dtos/index.js";
 import { createBillValidate } from "../middlewares/billValidate.js";
 
 const router = express.Router();
+//----------------------New route---------------------------
 
-router.get("/", async (req, res) => {
+// Receive id bill to get client info(avatar,name)
+router.get("/:_id", async (req, res) => {
   try {
-    const findBill = await BillController.getAllUsing();
+    const result = await BillController.getClientInfoByIdBill(req.params._id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+//----------------------------------------------------------
+router.get("/client/:_id", async (req, res) => {
+  try {
+    const findBill = await BillController.getBillByIdUser(req.params._id);
     res.status(200).json(findBill);
   } catch (error) {
     res.status(500).json(error);

@@ -1,25 +1,65 @@
 import { TableModel } from "../models/TableModel.js";
+import bookingService from "../services/bookingService.js";
 import tableService from "../services/tableService.js";
+import tableImageController from "./tableImageController.js";
 
-const get = async () => {
-  return await tableService.find();
+const get = async (data) => {
+  return await tableService.find(data);
+};
+
+const search = async (data) => {
+  const { stage, timeCheckIn, dateCheckIn } = data;
+
+  const findTable = await tableService.find(data);
+
+  let result = findTable;
+
+  if (timeCheckIn && dateCheckIn) {
+    const splitTime = timeCheckIn?.split(":");
+    const timeStart = `${
+      splitTime[0] < 10 ? `0${splitTime[0]}` : splitTime[0]
+    }${splitTime[1]}`;
+    const timeEnd = `${Number(splitTime[0]) + 4}${splitTime[1]}`;
+
+    const findBooking = await bookingService.find({
+      $or: [
+        { timeCheckIn: { $gte: timeStart, $lte: timeEnd } },
+        { timeCheckOut: { $gte: timeStart, $lte: timeEnd } },
+      ],
+      dateCheckIn: dateCheckIn,
+    });
+    findBooking.forEach((book) => {
+      let count = 0;
+      findTable.forEach((table) => {
+        if (table._id.toString() === book.id_table) {
+          result.splice(count, 1);
+        }
+        count++;
+      });
+    });
+  }
+  return result;
 };
 
 const create = async (data) => {
-  const { numOfPeople, id_bill, status, stage, special } = data;
-  const findTable = await tableService.findStage(data.stage);
+  const { numOfPeople, stage, image1, image2, image3, image4 } = data;
+  const findTable = await tableService.findStage(stage);
   let count = 0;
   findTable.forEach((e) => (count += 1));
   const newData = {
     numOfPeople,
-    id_bill,
-    status,
     stage,
-    special,
     name: `${stage}-${count + 1}`,
   };
-  const create = await tableService.create(newData);
-  return create;
+  const table = await tableService.create(newData);
+  const tableImage = await tableImageController.create({
+    id_table: table._id,
+    image1,
+    image2,
+    image3,
+    image4,
+  });
+  return { table, tableImage };
 };
 
 const updateStatus = async (id_table, status) => {
@@ -28,9 +68,34 @@ const updateStatus = async (id_table, status) => {
 };
 
 const update = async (data) => {
-  await tableService.findOneAndUpdate({ _id: data._id }, data);
+  const { _id, numOfPeople, stage, image1, image2, image3, image4, options } =
+    data;
+  await tableService.findOneAndUpdate({ _id }, { numOfPeople, stage });
+  const findTableImage = await tableImageController.findOne({ id_table: _id });
+  if (findTableImage) {
+    await tableImageController.update({
+      id_table: _id,
+      image1,
+      image2,
+      image3,
+      image4,
+      options,
+    });
+  } else {
+    await tableImageController.create({
+      id_table: _id,
+      image1,
+      image2,
+      image3,
+      image4,
+      options,
+    });
+  }
 
-  return await tableService.findOne({ _id: data._id });
+  const table = await tableService.findOne({ _id });
+  const tableImage = await tableImageController.findOne({ id_table: _id });
+
+  return { table, tableImage };
 };
 
 const del = async (data) => {
@@ -54,4 +119,15 @@ const checkStatus = async (data) => {
   return result;
 };
 
-export default { get, create, update, del, updateStatus, checkStatus };
+const getDistinct = async (data) => await tableService.findDistinct(data);
+
+export default {
+  get,
+  search,
+  create,
+  update,
+  del,
+  updateStatus,
+  checkStatus,
+  getDistinct,
+};

@@ -6,8 +6,8 @@ const create = (data) => {
   return newTable;
 };
 
-const find = async () => {
-  return await TableModel.find();
+const find = async (data) => {
+  return await TableModel.find(data);
 };
 
 const findOne = async (data) => {
@@ -40,6 +40,8 @@ const findStage = (stage) => {
   return TableModel.find({ stage: stage });
 };
 
+const findDistinct = async (option) => await TableModel.distinct(option);
+
 export default {
   create,
   find,
@@ -49,4 +51,5 @@ export default {
   findOneAndUpdate,
   findStage,
   del,
+  findDistinct,
 };

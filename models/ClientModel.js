@@ -18,6 +18,8 @@ const ClientSchema = new mongoose.Schema({
   address: {
     type: String,
   },
+  sex: { type: String },
+  birth: { type: String },
   verification: {
     type: String,
   },

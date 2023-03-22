@@ -29,22 +29,22 @@ const create = async (data) => {
 const update = async () => {};
 
 const findId = async (data) => {
-  const { username, email, phone } = await clientService.findOne({
-    _id: data.id_client,
-  });
-  return { username, email, phone };
+  const { username, email, phone, address, sex, birth } =
+    await clientService.findOne(data);
+  return { username, email, phone, address, sex, birth };
 };
 
 const login = async (data) => {
   let result;
-  const findClient = await clientService.findOne(data);
+  const findClient = await clientService.findOne({ email: data.email });
   if (findClient) {
     if (checkVerification(findClient)) {
-      const { _id, username, password, email, phone, address } = findClient;
+      const { _id, username, password, email, phone, address, sex, birth } =
+        findClient;
       const checkPassword = await comparePassword(data.password, password);
       if (checkPassword) {
-        const createToken = await setAccessToken(username);
-        result = { createToken, username, email, phone, address };
+        const createToken = await setAccessToken(_id, username);
+        result = { createToken, username, email, phone, address, sex, birth };
       } else {
         result = 2;
       }
@@ -52,8 +52,20 @@ const login = async (data) => {
       result = 1;
     }
   } else result = -1;
-
   return result;
 };
 
-export default { checkVerification, create, findId, findOne, update, login };
+const get = async (data) => {
+  const { username } = await clientService.findOne(data);
+  return { username };
+};
+
+export default {
+  checkVerification,
+  create,
+  findId,
+  findOne,
+  update,
+  login,
+  get,
+};

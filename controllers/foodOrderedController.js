@@ -6,6 +6,10 @@ const find = async () => {
   return await foodOrderedService.find();
 };
 
+const findByStatus = async (status) => {
+  return await foodOrderedService.find({ status });
+};
+
 const create = async (data) => {
   let result;
 
@@ -71,4 +75,5 @@ export default {
   updateCancelAdmin,
   getFoodByBill,
   find,
+  findByStatus,
 };

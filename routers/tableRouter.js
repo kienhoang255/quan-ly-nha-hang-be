@@ -11,8 +11,27 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const getTable = await TableController.get();
+    const getTable = await TableController.get(req.query);
     res.status(200).json(getTable);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/search", async (req, res) => {
+  try {
+    const getTable = await TableController.search(req.query);
+    res.status(200).json(getTable);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/option/:option", async (req, res) => {
+  try {
+    const findTable = await TableController.getDistinct(req.params.option);
+
+    res.status(200).json(findTable);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -30,7 +49,7 @@ router.post("/", createTableValidate, async (req, res) => {
   try {
     const tableDto = TableDto.create(req.body);
     const createTable = await TableController.create(tableDto);
-    res.status(200).json({ createTable, message: "success" });
+    res.status(200).json({ data: createTable, message: "success" });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -39,8 +58,8 @@ router.post("/", createTableValidate, async (req, res) => {
 router.put("/", updateTableValidate, async (req, res) => {
   try {
     const tableDto = TableDto.update(req.body);
-    const updateTable = await TableController.update(tableDto);
-    res.status(200).json({ updateTable, message: "success" });
+    const data = await TableController.update(tableDto);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json(error);
   }

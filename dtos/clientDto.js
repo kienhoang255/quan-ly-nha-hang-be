@@ -14,8 +14,8 @@ const login = (reqBody) => {
 };
 
 const find = (reqParams) => {
-  const { id } = reqParams;
-  return { id_client: id };
+  const { _id } = reqParams;
+  return _id;
 };
 
 export default { create, update, login, find };

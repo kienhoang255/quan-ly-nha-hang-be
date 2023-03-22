@@ -50,10 +50,10 @@ router.post("/login", loginClientValidate, async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:_id", async (req, res) => {
   try {
     const clientDto = ClientDto.find(req.params);
-    const findClient = await ClientController.findId(clientDto);
+    const findClient = await ClientController.findId({ _id: clientDto });
     if (findClient) {
       return res.status(200).json(findClient);
     } else res.status(400).json("Not found client");

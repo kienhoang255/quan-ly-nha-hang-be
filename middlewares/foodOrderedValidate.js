@@ -2,13 +2,8 @@ import { isNull } from "../validate/validate.js";
 
 const create = (req, res, next) => {
   try {
-    const id_table = req.body.id_table;
     const foods = req.body.foods;
     const id_bill = req.body.id_bill;
-
-    if (!isNull(id_table)) {
-      return res.status(400).json("ID table field not received");
-    }
 
     if (!isNull(foods)) {
       return res.status(400).json("Foods field not received");

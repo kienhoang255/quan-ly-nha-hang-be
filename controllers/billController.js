@@ -1,7 +1,16 @@
 import billService from "../services/billService.js";
+import clientService from "../services/clientService.js";
 import foodOrderedService from "../services/foodOrderedService.js";
 import tableService from "../services/tableService.js";
 import { ClientController } from "./index.js";
+
+const getClientInfoByIdBill = async (id) => {
+  const { id_client } = await billService.findBillByIdBill(id);
+
+  const { avatar, username } = await clientService.findOne({ _id: id_client });
+
+  return { avatar, username };
+};
 
 const client = (email) => {
   const result = {
@@ -94,6 +103,10 @@ const getAllUsing = async () => {
   return await billService.find({ status: "using" });
 };
 
+const getBillByIdUser = async (id) => {
+  return await billService.find({ id_client: id });
+};
+
 export default {
   create,
   findTableAndCreate,
@@ -102,4 +115,6 @@ export default {
   getOne,
   getAllUsing,
   checkOut,
+  getClientInfoByIdBill,
+  getBillByIdUser,
 };

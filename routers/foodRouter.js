@@ -46,9 +46,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:_id", async (req, res) => {
   try {
-    const query = req.query;
     const params = req.params;
-    const findFood = await FoodController.find(params, query);
+    const findFood = await FoodController.findOne(params);
     res.status(200).json(findFood);
   } catch (error) {
     res.status(500).json(error);

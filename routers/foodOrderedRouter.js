@@ -15,6 +15,15 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:type", async (req, res) => {
+  try {
+    const findFO = await FOController.findByStatus(req.params.type);
+    res.status(200).json(findFO);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.post("/", foodOrderedValidate.create, async (req, res) => {
   try {
     const pusher = new Pusher({
