@@ -13,13 +13,19 @@ router.post("/", createClientValidate, async (req, res) => {
   try {
     const clientDto = ClientDto.create(req.body);
     const createClient = await ClientController.create(clientDto);
-    if (createClient === undefined) {
-      res.status(400).json("Account already exist");
-    } else {
-      res.status(200).json(createClient);
-    }
+    res.status(200).json(createClient);
   } catch (error) {
-    res.status(500).json();
+    res.status(error.code || 500).json(error.message || error);
+  }
+});
+
+router.post("/create", createClientValidate, async (req, res) => {
+  try {
+    const clientDto = ClientDto.create(req.body);
+    const createClient = await ClientController.create(clientDto);
+    res.status(200).json(createClient);
+  } catch (error) {
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 
@@ -29,24 +35,21 @@ router.post("/login", loginClientValidate, async (req, res) => {
 
     const loginClient = await ClientController.login(clientDto);
 
-    if (loginClient === -1) {
-      return res.status(400).json({ messageErr: "Account is not exist" });
-    }
-    if (loginClient === 1) {
-      return res.status(400).json({
-        messageErr:
-          "Your account is not verified, need resigter for verifiedAccount is not exist",
-      });
-    }
-    if (loginClient === 2) {
-      return res.status(400).json({
-        messageErr: "Email and password are not correct!",
-      });
-    } else {
-      return res.status(200).json(loginClient);
-    }
+    return res.status(200).json(loginClient);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(error.code).json(error.message);
+  }
+});
+
+router.post("/updatePassword", loginClientValidate, async (req, res) => {
+  try {
+    const clientDto = ClientDto.login(req.body);
+
+    const client = await ClientController.updatePassword(clientDto);
+
+    return res.status(200).json(client);
+  } catch (error) {
+    res.status(error.code).json(error.message);
   }
 });
 

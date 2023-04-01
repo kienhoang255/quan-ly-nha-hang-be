@@ -1,7 +1,9 @@
 import clientService from "../services/clientService.js";
+import HttpError from "../utils/HttpError.js";
 import { comparePassword } from "../utils/comparePassword.js";
 import { setAccessToken } from "../utils/setToken.js";
 import { isEmail } from "../validate/validate.js";
+import bcrypt from "bcrypt";
 
 const checkVerification = (data) =>
   data.verification === "true" ? true : false;
@@ -12,21 +14,23 @@ const findOne = async (data) => {
 };
 
 const create = async (data) => {
-  let result;
   const findClient = await findOne(data);
   const EmailClient = clientService.clientEmail(data);
   const PhoneClient = clientService.clientPhone(data);
   if (findClient === null) {
     if (!isEmail(data.email)) {
-      result = await clientService.create(PhoneClient);
+      return await clientService.create({
+        ...PhoneClient,
+        verification: "true",
+      });
     } else {
-      result = await clientService.create(EmailClient);
+      return await clientService.create({
+        ...EmailClient,
+        verification: "true",
+      });
     }
-  }
-  return result;
+  } else throw new HttpError("Account already exist", 400);
 };
-
-const update = async () => {};
 
 const findId = async (data) => {
   const { username, email, phone, address, sex, birth } =
@@ -35,8 +39,9 @@ const findId = async (data) => {
 };
 
 const login = async (data) => {
-  let result;
-  const findClient = await clientService.findOne({ email: data.email });
+  const findClient = await clientService.findOne({
+    $or: [{ email: data.email }, { phone: data.email }],
+  });
   if (findClient) {
     if (checkVerification(findClient)) {
       const { _id, username, password, email, phone, address, sex, birth } =
@@ -44,15 +49,33 @@ const login = async (data) => {
       const checkPassword = await comparePassword(data.password, password);
       if (checkPassword) {
         const createToken = await setAccessToken(_id, username);
-        result = { createToken, username, email, phone, address, sex, birth };
+        return { createToken, username, email, phone, address, sex, birth };
       } else {
-        result = 2;
+        throw new HttpError("Email and password are not correct!", 404);
       }
     } else {
-      result = 1;
+      throw new HttpError(
+        "Your account is not verified, need resigter for verifiedAccount is not exist",
+        402
+      );
     }
-  } else result = -1;
-  return result;
+  } else throw new HttpError("Account not exist!", 401);
+};
+
+const updatePassword = async (data) => {
+  const { email, password } = data;
+  const find = await clientService.findOne({
+    $or: [{ email: email }, { phone: email }],
+  });
+
+  if (find) {
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    return clientService.update(
+      { $or: [{ email: email }, { phone: email }] },
+      { password: hashPassword, verification: "true" }
+    );
+  } else throw new HttpError("Email is not exist!", 400);
 };
 
 const get = async (data) => {
@@ -61,11 +84,10 @@ const get = async (data) => {
 };
 
 export default {
-  checkVerification,
   create,
   findId,
   findOne,
-  update,
+  updatePassword,
   login,
   get,
 };

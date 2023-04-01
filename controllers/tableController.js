@@ -42,7 +42,7 @@ const search = async (data) => {
 };
 
 const create = async (data) => {
-  const { numOfPeople, stage, image1, image2, image3, image4 } = data;
+  const { numOfPeople, stage, image1, image2, image3, image4, options } = data;
   const findTable = await tableService.findStage(stage);
   let count = 0;
   findTable.forEach((e) => (count += 1));
@@ -58,6 +58,7 @@ const create = async (data) => {
     image2,
     image3,
     image4,
+    options,
   });
   return { table, tableImage };
 };
