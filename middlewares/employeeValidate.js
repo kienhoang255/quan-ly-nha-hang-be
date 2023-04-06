@@ -27,9 +27,7 @@ const checkExistId = async (req, res, next) => {
             .status(401)
             .json({ message: "Phone number already exists" });
         } else if (email === holder[0].email) {
-          return res
-            .status(402)
-            .json({ message: "Email number already exists" });
+          return res.status(402).json({ message: "Email already exists" });
         } else next();
       } else if (phone) {
         //check phone number has been changed ?
@@ -56,9 +54,7 @@ const checkExistId = async (req, res, next) => {
           });
           //check email number exists
           if (checkEmail) {
-            return res
-              .status(402)
-              .json({ message: "Email number already exists" });
+            return res.status(402).json({ message: "Email already exists" });
           } else next();
         }
       }
@@ -84,7 +80,7 @@ const checkExistValue = async (req, res, next) => {
       if (checkBoth.length === 0) {
         next();
       } else if (checkBoth.filter((e) => e.email !== email)) {
-        return res.status(402).json({ message: "Email number already exists" });
+        return res.status(402).json({ message: "Email already exists" });
       } else if (checkBoth.filter((e) => e.phone !== phone)) {
         return res.status(401).json({ message: "Phone number already exists" });
       } else next();
@@ -103,7 +99,7 @@ const checkExistValue = async (req, res, next) => {
       });
       //check email number exists
       if (checkEmail) {
-        return res.status(402).json({ message: "Email number already exists" });
+        return res.status(402).json({ message: "Email already exists" });
       } else next();
     }
   } catch (error) {

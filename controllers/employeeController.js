@@ -2,7 +2,31 @@ import employeeService from "../services/employeeService.js";
 import { isEmail } from "../validate/validate.js";
 
 const get = async (data) => {
-  return await employeeService.get(data);
+  return await employeeService.get(data, 10, 2);
+};
+
+const search = async (q, page) => {
+  const get = {
+    $or: [
+      { username: { $regex: q, $options: "i" } },
+      { email: { $regex: q, $options: "i" } },
+      { address: { $regex: q, $options: "i" } },
+      { phone: { $regex: q, $options: "i" } },
+      { role: { $regex: q, $options: "i" } },
+      { job: { $regex: q, $options: "i" } },
+    ],
+  };
+  const paginationCount = await employeeService.count(get);
+  const paginationLimit = 10;
+  const paginationPage = Math.ceil(paginationCount / paginationLimit);
+
+  const data = await employeeService.get(
+    get,
+    paginationLimit,
+    page * paginationLimit
+  );
+
+  return { paginationCount, paginationPage, paginationLimit, data };
 };
 
 const getOne = async (data) => {
@@ -29,7 +53,9 @@ const create = async (data) => {
   const EmailUser = employeeService.userEmail(data);
   const PhoneUser = employeeService.userPhone(data);
   if (findOne === null) {
-    if (isEmail(data?.email)) {
+    if (data?.email && data.phone) {
+      result = await employeeService.create(data);
+    } else if (isEmail(data?.email)) {
       result = await employeeService.create(EmailUser);
     } else {
       result = await employeeService.create(PhoneUser);
@@ -56,4 +82,4 @@ const del = async (data) => {
   return await employeeService.del(data);
 };
 
-export default { get, create, update, del, getOne };
+export default { get, create, update, del, getOne, search };

@@ -25,8 +25,12 @@ const userPhone = (data) => {
   return clientPhone;
 };
 
-const get = async (data) => {
-  return await UserModel.find(data);
+const get = async (data, limit, skip) => {
+  return await UserModel.find(data).limit(limit).skip(skip);
+};
+
+const count = async (data) => {
+  return await UserModel.find(data).count();
 };
 
 const getOne = async (data) => {
@@ -47,4 +51,13 @@ const del = async (id, data) => {
   return await UserModel.findOneAndDelete(id, data);
 };
 
-export default { get, getOne, create, userEmail, userPhone, update, del };
+export default {
+  get,
+  getOne,
+  create,
+  userEmail,
+  userPhone,
+  update,
+  del,
+  count,
+};

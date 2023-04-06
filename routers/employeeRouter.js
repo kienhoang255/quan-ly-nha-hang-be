@@ -14,6 +14,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/search", async (req, res) => {
+  try {
+    const page = req.query.page;
+    const getEmployee = await employeeController.search(req.query.q, page);
+    res.status(200).json(getEmployee);
+  } catch (error) {
+    res.status(500).json();
+  }
+});
+
 router.get("/job", async (req, res) => {
   try {
     const getEmployee = await employeeController.get(req.job);
@@ -28,9 +38,7 @@ router.post("/", employeeValidate.checkExistValue, async (req, res) => {
     const createDto = employeeDto.create(req.body);
     const getEmployee = await employeeController.create(createDto);
     if (getEmployee) {
-      return res
-        .status(200)
-        .json({ createEmployee: getEmployee, message: "success" });
+      return res.status(200).json({ data: getEmployee, message: "success" });
     } else {
       return res.status(400).json("Account already exist");
     }
