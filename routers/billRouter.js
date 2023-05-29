@@ -2,7 +2,8 @@ import express from "express";
 import Pusher from "pusher";
 import { BillController, TableController } from "../controllers/index.js";
 import { BillDto } from "../dtos/index.js";
-import { createBillValidate } from "../middlewares/billValidate.js";
+import billValidate from "../middlewares/billValidate.js";
+import billDto from "../dtos/billDto.js";
 
 const router = express.Router();
 //----------------------New route---------------------------
@@ -18,6 +19,28 @@ router.get("/:_id", async (req, res) => {
 });
 
 //----------------------------------------------------------
+
+router.get("/search/search/", async (req, res) => {
+  try {
+    const page = req.query.page;
+    const q = req.query.q;
+    const date = req.query.date;
+    const findBill = await BillController.search(q, date, page);
+    res.status(200).json(findBill);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/bill/:_id", async (req, res) => {
+  try {
+    const findBill = await BillController.getBillByIdBill(req.params._id);
+    res.status(200).json(findBill);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.get("/client/:_id", async (req, res) => {
   try {
     const findBill = await BillController.getBillByIdUser(req.params._id);
@@ -27,7 +50,7 @@ router.get("/client/:_id", async (req, res) => {
   }
 });
 
-router.post("/", createBillValidate, async (req, res) => {
+router.post("/", billValidate.createBillValidate, async (req, res) => {
   try {
     const pusher = new Pusher({
       appId: process.env.pusher_app_id,
@@ -56,6 +79,19 @@ router.post("/", createBillValidate, async (req, res) => {
     res.status(500).json(error);
   }
 });
+
+router.post(
+  "/walk-in-guest",
+  billValidate.createBillWalkInGuest,
+  async (req, res) => {
+    try {
+      const createdBill = await BillController.createWalkInGuest(req.body);
+      res.status(200).json(createdBill);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+);
 
 router.post("/get-bill", async (req, res) => {
   try {
@@ -97,6 +133,17 @@ router.patch("/", async (req, res) => {
     res.status(200).json();
   } catch (error) {
     res.status(500).json(error);
+  }
+});
+
+router.post("/change_table", billValidate.changeTable, async (req, res) => {
+  try {
+    const dto = billDto.changeTable(req.body);
+    const changeTable = await BillController.changeTable(dto);
+
+    res.status(200).json(changeTable);
+  } catch (error) {
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 

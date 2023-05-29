@@ -4,12 +4,88 @@ import foodOrderedService from "../services/foodOrderedService.js";
 import tableService from "../services/tableService.js";
 import { ClientController } from "./index.js";
 
+const search = async (q, date, page) => {
+  let get;
+
+  if (!date) {
+    get = {
+      $or: [
+        { "orders.id_bill": { $regex: q, $options: "i" } },
+        { id_client: { $regex: q, $options: "i" } },
+        {
+          createdAt: {
+            $gte: new Date(q).getTime(),
+            $lte: new Date(q).getTime() + 86400000,
+          },
+        },
+        {
+          updatedAt: {
+            $gte: new Date(q).getTime(),
+            $lte: new Date(q).getTime() + 86400000,
+          },
+        },
+      ],
+    };
+  } else if (!q) {
+    get = {
+      $or: [
+        {
+          createdAt: {
+            $gte: new Date(date).getTime(),
+            $lte: new Date(date).getTime() + 86400000,
+          },
+        },
+        {
+          updatedAt: {
+            $gte: new Date(date).getTime(),
+            $lte: new Date(date).getTime() + 86400000,
+          },
+        },
+      ],
+    };
+  } else {
+    get = {
+      $or: [
+        { "orders.id_bill": { $regex: q, $options: "i" } },
+        { id_client: { $regex: q, $options: "i" } },
+        {
+          createdAt: {
+            $gte: new Date(date).getTime(),
+            $lte: new Date(date).getTime() + 86400000,
+            // $gte: new Date(new Date(date).getTime()),
+            // $lte: new Date(new Date(date).getTime() + 86400000),
+          },
+        },
+        {
+          updatedAt: {
+            $gte: new Date(date).getTime(),
+            $lte: new Date(date).getTime() + 86400000,
+          },
+        },
+      ],
+    };
+  }
+
+  const paginationCount = await billService.count(get);
+  const paginationLimit = 12;
+  const paginationPage = Math.ceil(paginationCount / paginationLimit);
+
+  const data = await billService.findPagination(
+    get,
+    paginationLimit,
+    page * paginationLimit
+  );
+  return { paginationCount, paginationPage, paginationLimit, data };
+};
+
 const getClientInfoByIdBill = async (id) => {
   const { id_client } = await billService.findBillByIdBill(id);
 
-  const { avatar, username } = await clientService.findOne({ _id: id_client });
+  const { avatar, username, email, phone } = await clientService.findOne({
+    _id: id_client,
+  });
 
-  return { avatar, username };
+  return { avatar, username, email, phone };
 };
 
 const client = (email) => {
@@ -32,7 +108,8 @@ const create = async (data) => {
     const createBill1 = await findTableAndCreate(newData);
     await tableService.findOneAndUpdate(
       { _id: data.id_table },
-      { status: "using", $push: { id_bill: createBill1._id } }
+      // { status: "using", $push: { id_bill: createBill1._id } }
+      { status: "using", id_bill: createBill1._id }
     );
     const table = await tableService.findOne({
       _id: data.id_table,
@@ -47,6 +124,26 @@ const create = async (data) => {
     result = await create(newDataWhenCreateClient);
   }
   return result;
+};
+
+const createWalkInGuest = async (data) => {
+  // Create a new client
+  const createClient = await ClientController.createWalkInGuest();
+  // Create a new bill for walk-in guest
+  const createBill = await findTableAndCreate({
+    id_client: createClient._id,
+    id_table: data.id_table,
+  });
+  // Update table guest used
+  await tableService.findOneAndUpdate(
+    { _id: data.id_table },
+    { status: "using", id_bill: createBill._id }
+  );
+  // Find table for return
+  const table = await tableService.findOne({
+    _id: data.id_table,
+  });
+  return { createBill, table };
 };
 
 const findTableAndCreate = async (data) => {
@@ -75,20 +172,26 @@ const checkOut = async (data) => {
   const findFood = await foodOrderedService.find(data);
   const findTable = await billService.findOne(data);
   await tableService.updateCheckout(findTable, "empty");
-
   let totalPrice = 0;
 
-  findFood.forEach((foodOrdered) => {
-    totalPrice += foodOrdered.price * foodOrdered.quantity;
-    billService.findOneAndUpdate(data, {
-      $push: { orders: foodOrdered },
+  if (findFood[0]) {
+    console.log("luu");
+    findFood.forEach((foodOrdered) => {
+      if (foodOrdered.status === "served")
+        totalPrice += foodOrdered.price * foodOrdered.quantity;
+      billService.findOneAndUpdate(data, {
+        $push: { orders: foodOrdered },
+      });
+      foodOrderedService.findOneAndDelete({ _id: foodOrdered._id });
     });
-    foodOrderedService.findOneAndDelete({ _id: foodOrdered._id });
-  });
-  await billService.findOneAndUpdate(data, {
-    totalPrice,
-    status: "finished",
-  });
+    await billService.findOneAndUpdate(data, {
+      totalPrice,
+      status: "finished",
+    });
+  } else {
+    console.log("xoa");
+    await billService.findOneAndDelete({ _id: data.id_bill });
+  }
 
   return await tableService.findOne({ _id: findTable.id_table });
 };
@@ -107,8 +210,41 @@ const getBillByIdUser = async (id) => {
   return await billService.find({ id_client: id });
 };
 
+const changeTable = async (data) => {
+  // Change bill(id_table)
+  await billService.findOneAndUpdate(
+    { id_bill: data.id_bill },
+    {
+      id_table: data.id_table_to,
+    }
+  );
+
+  // Change table(id_bill,status)
+  await tableService.findOneAndUpdate(
+    { _id: data.id_table },
+    {
+      status: "empty",
+      id_bill: "",
+    }
+  );
+
+  await tableService.findOneAndUpdate(
+    { _id: data.id_table_to },
+    { status: "using", id_bill: data.id_bill }
+  );
+
+  const tableTo = await tableService.findOne({ _id: data.id_table_to });
+  const table = await tableService.findOne({ _id: data.id_table });
+
+  return { tableTo: tableTo, table: table };
+};
+
+const getBillByIdBill = async (id) =>
+  await billService.findOne({ id_bill: id });
+
 export default {
   create,
+  createWalkInGuest,
   findTableAndCreate,
   preCheckOut,
   checkStatus,
@@ -117,4 +253,7 @@ export default {
   checkOut,
   getClientInfoByIdBill,
   getBillByIdUser,
+  changeTable,
+  getBillByIdBill,
+  search,
 };

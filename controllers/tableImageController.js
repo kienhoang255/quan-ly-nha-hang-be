@@ -8,6 +8,7 @@ const findOne = async (data) => {
 const find = async (data) => {
   let result = [];
   const tableImage = await tableImageService.find({ options: { $all: data } });
+
   for (const item of tableImage) {
     result.push(await tableService.findOne({ _id: item.id_table }));
   }

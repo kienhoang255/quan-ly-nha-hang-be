@@ -3,9 +3,11 @@ import bookingController from "../controllers/bookingController.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/:date", async (req, res) => {
   try {
-    res.status(200).json(result);
+    const date = req.params.date;
+    const booking = await bookingController.find(date);
+    res.status(200).json(booking);
   } catch (error) {
     res.status(500).json(error);
   }

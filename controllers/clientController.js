@@ -32,6 +32,14 @@ const create = async (data) => {
   } else throw new HttpError("Account already exist", 400);
 };
 
+const createWalkInGuest = async (data) => {
+  return await clientService.create({
+    username: "Khách",
+    password: "12341234",
+    verification: "true",
+  });
+};
+
 const findId = async (data) => {
   const { username, email, phone, address, sex, birth } =
     await clientService.findOne(data);
@@ -85,6 +93,7 @@ const get = async (data) => {
 
 export default {
   create,
+  createWalkInGuest,
   findId,
   findOne,
   updatePassword,

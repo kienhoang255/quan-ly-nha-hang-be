@@ -37,7 +37,10 @@ router.get("/option/:option", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const query = req.query;
+    // res.headers["set-cookie"];
+
     const findFood = await FoodController.find(query);
+    res.cookie("cookie123", "randomNumber");
     res.status(200).json(findFood);
   } catch (error) {
     res.status(500).json(error);

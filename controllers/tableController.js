@@ -8,17 +8,28 @@ const get = async (data) => {
 };
 
 const search = async (data) => {
-  const { stage, timeCheckIn, dateCheckIn } = data;
+  const { stage, numOfPeople, timeCheckIn, dateCheckIn } = data;
 
-  const findTable = await tableService.find(data);
+  const findTable = async () => {
+    if (stage)
+      return await tableService.find({
+        numOfPeople: { $gte: numOfPeople ? numOfPeople : 0 },
+        stage: stage,
+      });
+    else
+      return await tableService.find({
+        numOfPeople: { $gte: numOfPeople ? numOfPeople : 0 },
+      });
+  };
 
-  let result = findTable;
+  let result = await findTable();
 
   if (timeCheckIn && dateCheckIn) {
     const splitTime = timeCheckIn?.split(":");
     const timeStart = `${
       splitTime[0] < 10 ? `0${splitTime[0]}` : splitTime[0]
     }${splitTime[1]}`;
+
     const timeEnd = `${Number(splitTime[0]) + 4}${splitTime[1]}`;
 
     const findBooking = await bookingService.find({
@@ -28,9 +39,10 @@ const search = async (data) => {
       ],
       dateCheckIn: dateCheckIn,
     });
+
     findBooking.forEach((book) => {
       let count = 0;
-      findTable.forEach((table) => {
+      result.forEach((table) => {
         if (table._id.toString() === book.id_table) {
           result.splice(count, 1);
         }

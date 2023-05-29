@@ -10,4 +10,9 @@ const get = (reqBody) => {
 
 const addFoodToBill = (reqBody) => {};
 
-export default { create, get, addFoodToBill };
+const changeTable = (reqBody) => {
+  const { id_table, id_bill, id_table_to } = reqBody;
+  return { id_table, id_bill, id_table_to };
+};
+
+export default { create, get, addFoodToBill, changeTable };

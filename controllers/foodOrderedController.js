@@ -14,7 +14,6 @@ const create = async (data) => {
   let result;
 
   result = await foodOrderedService.insertMulti(data).then((value) => value);
-
   return result;
 };
 

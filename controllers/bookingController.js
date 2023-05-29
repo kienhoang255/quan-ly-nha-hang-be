@@ -26,7 +26,7 @@ const create = async (data) => {
   } else throw new Error("Booking is exist same date/time check in");
 };
 
-const find = async (data) => await bookingService.find(data);
+const find = async (data) => await bookingService.find({ dateCheckIn: data });
 
 const findOne = async (data) => await bookingService.findOne(data);
 
