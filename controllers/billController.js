@@ -1,6 +1,7 @@
 import billService from "../services/billService.js";
 import clientService from "../services/clientService.js";
 import foodOrderedService from "../services/foodOrderedService.js";
+import foodService from "../services/foodService.js";
 import tableService from "../services/tableService.js";
 import { ClientController } from "./index.js";
 
@@ -242,6 +243,27 @@ const changeTable = async (data) => {
 const getBillByIdBill = async (id) =>
   await billService.findOne({ id_bill: id });
 
+const getAllInfo = async (data) => {
+  const { name, stage } = await tableService.findOne({ _id: data.id_table });
+  const { email, phone, username } = await clientService.findOne({
+    _id: data.id_client,
+  });
+
+  let foodName = {};
+  let { orders } = await getBillByIdBill(data.id_bill);
+
+  if (!orders[0]) {
+    orders = await foodOrderedService.find({ id_bill: data.id_bill });
+  }
+
+  for (const food of orders) {
+    const { name } = await foodService.findOne({ _id: food.id_food });
+    foodName = { ...foodName, [food.id_food]: name };
+  }
+
+  return { name, stage, email: email || phone || username, foodName };
+};
+
 export default {
   create,
   createWalkInGuest,
@@ -256,4 +278,5 @@ export default {
   changeTable,
   getBillByIdBill,
   search,
+  getAllInfo,
 };

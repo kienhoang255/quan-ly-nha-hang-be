@@ -9,8 +9,8 @@ router.post("/", createFoodValidate, async (req, res) => {
   try {
     const foodDto = FoodDto.create(req.body);
 
-    const createFood = await FoodController.create(foodDto);
-    res.status(200).json({ createFood, message: "success" });
+    const data = await FoodController.create(foodDto);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -60,8 +60,8 @@ router.get("/:_id", async (req, res) => {
 router.put("/", async (req, res) => {
   try {
     const foodDto = FoodDto.update(req.body);
-    const updateFood = await FoodController.findOneAndUpdate(foodDto);
-    res.status(200).json({ updateFood, message: "success" });
+    const data = await FoodController.findOneAndUpdate(foodDto);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -69,8 +69,8 @@ router.put("/", async (req, res) => {
 
 router.delete("/:_id", async (req, res) => {
   try {
-    const deleteFood = await FoodController.findOneAndDel(req.params);
-    res.status(200).json({ deleteFood, message: "success" });
+    const data = await FoodController.findOneAndDel(req.params);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json(error);
   }

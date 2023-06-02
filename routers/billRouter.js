@@ -18,6 +18,15 @@ router.get("/:_id", async (req, res) => {
   }
 });
 
+router.post("/info/info", async (req, res) => {
+  try {
+    const result = await BillController.getAllInfo(req.body);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 //----------------------------------------------------------
 
 router.get("/search/search/", async (req, res) => {

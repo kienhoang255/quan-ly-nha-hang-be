@@ -2,7 +2,7 @@ import { isNegative, isNull, isNumber } from "../validate/validate.js";
 
 export const createFoodValidate = (req, res, next) => {
   try {
-    const { name, price, type, image, description } = req.body;
+    const { name, price, type, image } = req.body;
     if (!isNull(name)) {
       return res.status(400).json("Name field not received");
     }
@@ -23,10 +23,6 @@ export const createFoodValidate = (req, res, next) => {
 
     if (!isNull(image)) {
       return res.status(400).json("Image field not received");
-    }
-
-    if (!isNull(description)) {
-      return res.status(400).json("Description field not received");
     }
 
     next();
