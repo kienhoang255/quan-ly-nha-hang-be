@@ -50,7 +50,6 @@ const create = (reqBody) => {
 const update = (reqBody) => {
   return {
     username: reqBody.username,
-    password: reqBody.password,
     avatar: reqBody.avatar,
     email: reqBody.email,
     phone: reqBody.phone,

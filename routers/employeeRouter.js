@@ -17,8 +17,10 @@ router.get("/", async (req, res) => {
 router.get("/search", async (req, res) => {
   try {
     const page = req.query.page;
-    const getEmployee = await employeeController.search(req.query.q, page);
-    res.status(200).json(getEmployee);
+    const status = req.query.status;
+    const q = req.query.q;
+    const data = await employeeController.search({ q, page, status });
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json();
   }
@@ -47,10 +49,19 @@ router.post("/", employeeValidate.checkExistValue, async (req, res) => {
   }
 });
 
-router.delete("/:_id", async (req, res) => {
+router.put("/delete/:_id", async (req, res) => {
   try {
-    const delEmployee = await employeeController.del(req.params);
-    res.status(200).json({ delEmployee, message: "success" });
+    const data = await employeeController.del(req.params);
+    res.status(200).json({ data, message: "success" });
+  } catch (error) {
+    res.status(500).json();
+  }
+});
+
+router.put("/restore/:_id", async (req, res) => {
+  try {
+    const data = await employeeController.restore(req.params);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json();
   }
@@ -59,8 +70,8 @@ router.delete("/:_id", async (req, res) => {
 router.put("/", employeeValidate.checkExistId, async (req, res) => {
   try {
     const updateDto = employeeDto.update(req.body);
-    const updateEmployee = await employeeController.update(updateDto);
-    res.status(200).json({ updateEmployee, message: "success" });
+    const data = await employeeController.update(updateDto);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json();
   }

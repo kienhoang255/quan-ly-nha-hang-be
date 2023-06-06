@@ -5,7 +5,12 @@ import { setAccessToken } from "../utils/setToken.js";
 import { comparePassword } from "../utils/comparePassword.js";
 
 const findOneUserController = async (data) => {
-  const findUser = { $or: [{ email: data.email }, { phone: data.email }] };
+  const findUser = {
+    $and: [
+      { status: true },
+      { $or: [{ email: data.email }, { phone: data.email }] },
+    ],
+  };
   const result = await userService.findOneUserService(findUser);
   return result;
 };

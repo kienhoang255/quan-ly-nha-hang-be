@@ -5,15 +5,20 @@ const get = async (data) => {
   return await employeeService.get(data, 10, 2);
 };
 
-const search = async (q, page) => {
+const search = async (req) => {
   const get = {
-    $or: [
-      { username: { $regex: q, $options: "i" } },
-      { email: { $regex: q, $options: "i" } },
-      { address: { $regex: q, $options: "i" } },
-      { phone: { $regex: q, $options: "i" } },
-      { role: { $regex: q, $options: "i" } },
-      { job: { $regex: q, $options: "i" } },
+    $and: [
+      { status: req.status },
+      {
+        $or: [
+          { username: { $regex: req.q, $options: "i" } },
+          { email: { $regex: req.q, $options: "i" } },
+          { address: { $regex: req.q, $options: "i" } },
+          { phone: { $regex: req.q, $options: "i" } },
+          { role: { $regex: req.q, $options: "i" } },
+          { job: { $regex: req.q, $options: "i" } },
+        ],
+      },
     ],
   };
   const paginationCount = await employeeService.count(get);
@@ -23,7 +28,7 @@ const search = async (q, page) => {
   const data = await employeeService.get(
     get,
     paginationLimit,
-    page * paginationLimit
+    req.page * paginationLimit
   );
 
   return { paginationCount, paginationPage, paginationLimit, data };
@@ -79,7 +84,13 @@ const update = async (data) => {
 };
 
 const del = async (data) => {
-  return await employeeService.del(data);
+  await employeeService.update({ _id: data }, { status: false });
+  return await employeeService.getOne({ _id: data });
 };
 
-export default { get, create, update, del, getOne, search };
+const restore = async (data) => {
+  await employeeService.update({ _id: data }, { status: true });
+  return await employeeService.getOne({ _id: data });
+};
+
+export default { get, create, update, del, getOne, search, restore };

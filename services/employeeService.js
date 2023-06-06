@@ -1,32 +1,36 @@
 import { UserModel } from "../models/UserModel.js";
 
 const userEmail = (data) => {
-  const { username, email, avatar, password, verification } = data;
+  const { username, email, avatar, password, status, job, address } = data;
   const clientEmail = {
     username,
     email,
     avatar,
     password,
-    verification,
+    status,
+    job,
+    address,
   };
   return clientEmail;
 };
 
 const userPhone = (data) => {
-  const { username, phone, password, avatar, verification } = data;
+  const { username, phone, password, avatar, status, job, address } = data;
   const clientPhone = {
     username,
     avatar,
     email: undefined,
     phone: phone,
     password,
-    verification,
+    status,
+    job,
+    address,
   };
   return clientPhone;
 };
 
 const get = async (data, limit, skip) => {
-  return await UserModel.find(data).limit(limit).skip(skip);
+  return await UserModel.find(data).limit(limit).skip(skip).sort({ _id: -1 });
 };
 
 const count = async (data) => {
