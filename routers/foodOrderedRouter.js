@@ -35,9 +35,9 @@ router.post("/", foodOrderedValidate.create, async (req, res) => {
     });
 
     const foodOrdered = FODto.create(req.body);
-    const food = await FOController.create(foodOrdered);
-    pusher.trigger("FO", "FO_order-event", { food });
-    res.status(200).json(food);
+    const data = await FOController.create(foodOrdered);
+    pusher.trigger("FO", "FO_order-event", { data });
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json(error);
   }

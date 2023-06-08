@@ -72,11 +72,9 @@ router.post("/", billValidate.createBillValidate, async (req, res) => {
     const checkStatus = await TableController.checkStatus(billDto);
     if (checkStatus) {
       const createdBill = await BillController.create(billDto);
-      pusher.trigger("table", "table-event", {
-        table: createdBill.table,
-      });
-      pusher.trigger("bill", "bill-event", {
+      pusher.trigger("bill", "checkIn-event", {
         bill: createdBill.createBill1,
+        table: createdBill.table,
       });
       return res.status(200).json(createdBill);
     } else {
@@ -94,7 +92,18 @@ router.post(
   billValidate.createBillWalkInGuest,
   async (req, res) => {
     try {
+      const pusher = new Pusher({
+        appId: process.env.pusher_app_id,
+        key: process.env.pusher_key,
+        secret: process.env.pusher_secret,
+        cluster: process.env.pusher_cluster,
+        useTLS: true,
+      });
       const createdBill = await BillController.createWalkInGuest(req.body);
+      pusher.trigger("bill", "checkIn-event", {
+        bill: createdBill.createBill,
+        table: createdBill.table,
+      });
       res.status(200).json(createdBill);
     } catch (error) {
       res.status(500).json(error);
@@ -125,7 +134,7 @@ router.post("/check-out", async (req, res) => {
     const checkBill = await BillController.preCheckOut(billDto);
     if (checkBill) {
       const result = await BillController.checkOut(billDto);
-      pusher.trigger("table", "table-event", {
+      pusher.trigger("bill", "checkOut-event", {
         table: result,
       });
       return res.status(200).json({ message: "success", table: result });
