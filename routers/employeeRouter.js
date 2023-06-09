@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const getEmployee = await employeeController.get();
     res.status(200).json(getEmployee);
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 
@@ -22,7 +22,7 @@ router.get("/search", async (req, res) => {
     const data = await employeeController.search({ q, page, status });
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 
@@ -31,7 +31,7 @@ router.get("/job", async (req, res) => {
     const getEmployee = await employeeController.get(req.job);
     res.status(200).json(getEmployee);
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 
@@ -45,7 +45,7 @@ router.post("/", employeeValidate.checkExistValue, async (req, res) => {
       return res.status(400).json("Account already exist");
     }
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 
@@ -54,7 +54,7 @@ router.put("/delete/:_id", async (req, res) => {
     const data = await employeeController.del(req.params);
     res.status(200).json({ data, message: "success" });
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 
@@ -63,7 +63,7 @@ router.put("/restore/:_id", async (req, res) => {
     const data = await employeeController.restore(req.params);
     res.status(200).json({ data, message: "success" });
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 
@@ -73,7 +73,7 @@ router.put("/", employeeValidate.checkExistId, async (req, res) => {
     const data = await employeeController.update(updateDto);
     res.status(200).json({ data, message: "success" });
   } catch (error) {
-    res.status(500).json();
+    res.status(500).json(error);
   }
 });
 

@@ -37,7 +37,7 @@ router.post("/login", loginClientValidate, async (req, res) => {
 
     return res.status(200).json(loginClient);
   } catch (error) {
-    res.status(error.code).json(error.message);
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 
@@ -49,7 +49,7 @@ router.post("/updatePassword", loginClientValidate, async (req, res) => {
 
     return res.status(200).json(client);
   } catch (error) {
-    res.status(error.code).json(error.message);
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 
