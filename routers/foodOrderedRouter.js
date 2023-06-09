@@ -80,7 +80,7 @@ router.put("/cancel", foodOrderedValidate.update, async (req, res) => {
   }
 });
 
-router.put("/cancelAdmin", foodOrderedValidate.create, async (req, res) => {});
+// router.put("/cancelAdmin", foodOrderedValidate.create, async (req, res) => {});
 
 router.get("/bill/:id_bill", async (req, res) => {
   try {
