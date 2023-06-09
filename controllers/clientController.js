@@ -3,7 +3,7 @@ import HttpError from "../utils/HttpError.js";
 import { comparePassword } from "../utils/comparePassword.js";
 import { setAccessToken } from "../utils/setToken.js";
 import { isEmail } from "../validate/validate.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const checkVerification = (data) =>
   data.verification === "true" ? true : false;

@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 export const comparePassword = async (password, bcryptPassword) => {
   if (!password) throw new Error("Password is missing,can not compare");
