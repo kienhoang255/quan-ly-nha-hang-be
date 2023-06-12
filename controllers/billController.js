@@ -176,7 +176,6 @@ const checkOut = async (data) => {
   let totalPrice = 0;
 
   if (findFood[0]) {
-    console.log("luu");
     findFood.forEach((foodOrdered) => {
       if (foodOrdered.status === "served")
         totalPrice += foodOrdered.price * foodOrdered.quantity;
@@ -190,7 +189,6 @@ const checkOut = async (data) => {
       status: "finished",
     });
   } else {
-    console.log("xoa");
     await billService.findOneAndDelete({ _id: data.id_bill });
   }
 
