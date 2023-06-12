@@ -15,4 +15,14 @@ const findOneUpdate = async (id, data) =>
 
 const findDistinct = async (option) => await TableImageModel.distinct(option);
 
-export default { create, find, findOne, findOneUpdate, findDistinct };
+const findOneAndDelete = async (data) =>
+  await TableImageModel.findOneAndDelete(data);
+
+export default {
+  create,
+  find,
+  findOne,
+  findOneUpdate,
+  findDistinct,
+  findOneAndDelete,
+};

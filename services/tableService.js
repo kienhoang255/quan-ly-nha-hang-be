@@ -14,8 +14,8 @@ const findOne = async (data) => {
   return await TableModel.findOne(data);
 };
 
-const del = (data) => {
-  return TableModel.deleteOne(data);
+const del = async (data) => {
+  return await TableModel.findOneAndDelete(data);
 };
 
 const updateStatus = (data, status) => {

@@ -8,6 +8,7 @@ const FoodOrderedSchema = new mongoose.Schema(
     quantity: { type: Number },
     status: { type: String, default: "cooking" },
     price: { type: Number },
+    nameTable: { type: String },
   },
   { timestamps: true }
 );

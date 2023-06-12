@@ -67,8 +67,8 @@ router.put("/", updateTableValidate, async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const deleteTable = await TableController.del(req.params);
-    res.status(200).json({ deleteTable, message: "success" });
+    const data = await TableController.findOneAndDelete(req.params.id);
+    res.status(200).json({ data, message: "success" });
   } catch (error) {
     res.status(500).json(error);
   }

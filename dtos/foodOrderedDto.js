@@ -1,5 +1,5 @@
 const create = (reqBody) => {
-  const { id_bill, foods } = reqBody;
+  const { id_bill, foods, nameTable } = reqBody;
 
   let result = [];
   foods.forEach((element) => {
@@ -8,6 +8,7 @@ const create = (reqBody) => {
       id_food: element.id_food,
       price: element.price,
       quantity: element.quantity,
+      nameTable: nameTable,
     });
   });
 

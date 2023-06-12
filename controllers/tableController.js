@@ -1,5 +1,6 @@
 import { TableModel } from "../models/TableModel.js";
 import bookingService from "../services/bookingService.js";
+import tableImageService from "../services/tableImageService.js";
 import tableService from "../services/tableService.js";
 import tableImageController from "./tableImageController.js";
 
@@ -83,7 +84,26 @@ const updateStatus = async (id_table, status) => {
 const update = async (data) => {
   const { _id, numOfPeople, stage, image1, image2, image3, image4, options } =
     data;
-  await tableService.findOneAndUpdate({ _id }, { numOfPeople, stage });
+
+  const checkStage = await tableService.findOne({ _id: _id });
+
+  if (checkStage.stage === stage) {
+    await tableService.findOneAndUpdate(
+      { _id: data._id },
+      { numOfPeople: data.numOfPeople }
+    );
+  } else {
+    const findStage = await tableService.findStage(stage);
+    let count = 0;
+    findStage.forEach((e) => (count += 1));
+    const newData = {
+      numOfPeople,
+      stage,
+      name: `${stage}-${count + 1}`,
+    };
+    await tableService.findOneAndUpdate({ _id: data._id }, newData);
+  }
+
   const findTableImage = await tableImageController.findOne({ id_table: _id });
   if (findTableImage) {
     await tableImageController.update({
@@ -111,8 +131,9 @@ const update = async (data) => {
   return { table, tableImage };
 };
 
-const del = async (data) => {
-  return await tableService.del({ _id: data.id });
+const findOneAndDelete = async (id) => {
+  await tableImageService.findOneAndDelete({ id_table: id });
+  return await tableService.del({ _id: id });
 };
 
 const checkStatus = async (data) => {
@@ -139,7 +160,7 @@ export default {
   search,
   create,
   update,
-  del,
+  findOneAndDelete,
   updateStatus,
   checkStatus,
   getDistinct,
