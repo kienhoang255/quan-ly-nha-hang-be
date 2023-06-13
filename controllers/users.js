@@ -1,8 +1,9 @@
-import { UserModel } from "../models/UserModel.js";
 import userService from "../services/userService.js";
 import { isEmail } from "../validate/validate.js";
 import { setAccessToken } from "../utils/setToken.js";
 import { comparePassword } from "../utils/comparePassword.js";
+import HttpError from "../utils/HttpError.js";
+import bcrypt from "bcryptjs";
 
 const findOneUserController = async (data) => {
   const findUser = {
@@ -58,4 +59,18 @@ const get = async (data) => {
   return { username, job, avatar };
 };
 
-export default { login, get, createUserController };
+const changePassword = async (data) => {
+  const { _id, password } = data;
+  const find = await userService.findOne({ _id });
+  if (find) {
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    return await userService.findOneAndUpdate(
+      { _id },
+      { password: hashPassword }
+    );
+  } else throw new HttpError("_id is not exist!", 400);
+};
+
+export default { login, get, createUserController, changePassword };

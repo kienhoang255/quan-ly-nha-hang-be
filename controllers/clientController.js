@@ -79,7 +79,7 @@ const updatePassword = async (data) => {
   if (find) {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-    return clientService.update(
+    return await clientService.update(
       { $or: [{ email: email }, { phone: email }] },
       { password: hashPassword, verification: "true" }
     );

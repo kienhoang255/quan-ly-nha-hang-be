@@ -7,3 +7,8 @@ export const loginUserDto = (reqBody) => {
   const { email, password } = reqBody;
   return { email, password };
 };
+
+export const changePassword = (reqBody) => {
+  const { _id, password } = reqBody;
+  return { _id, password };
+};

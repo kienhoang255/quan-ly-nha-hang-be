@@ -1,6 +1,10 @@
 import express from "express";
 import UserController from "../controllers/users.js";
-import { createUserDto, loginUserDto } from "../dtos/userDto.js";
+import {
+  changePassword,
+  createUserDto,
+  loginUserDto,
+} from "../dtos/userDto.js";
 import { authorizationToken } from "../middlewares/authorizationToken.js";
 import {
   createUserValidate,
@@ -55,6 +59,16 @@ router.get("/", async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json(error);
+  }
+});
+
+router.put("/change-password", async (req, res) => {
+  try {
+    const dto = changePassword(req.body);
+    const user = await UserController.changePassword(dto);
+    res.status(200).json({ data: user, message: "success" });
+  } catch (error) {
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 
