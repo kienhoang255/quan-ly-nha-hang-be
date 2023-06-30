@@ -4,6 +4,7 @@ import {
   changePassword,
   createUserDto,
   loginUserDto,
+  updateDto,
 } from "../dtos/userDto.js";
 import { authorizationToken } from "../middlewares/authorizationToken.js";
 import {
@@ -28,11 +29,13 @@ router.post("/", createUserValidate, async (req, res) => {
   }
 });
 
-router.put("/", updateUserValidate, async (req, res) => {
+router.put("/", async (req, res) => {
   try {
-    res.status(200).json("success");
+    const userDto = updateDto(req.body);
+    const data = await UserController.preUpdate(userDto);
+    res.status(200).json(data);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 
@@ -62,6 +65,15 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/id/:_id", async (req, res) => {
+  try {
+    const user = await UserController.find({ _id: req.params._id });
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.put("/change-password", async (req, res) => {
   try {
     const dto = changePassword(req.body);
@@ -72,14 +84,14 @@ router.put("/change-password", async (req, res) => {
   }
 });
 
-router.get("/:test", authorizationToken, (req, res) => {
-  // http://localhost/test/
-  try {
-    const userDto = req.params;
-    res.status(200).json("cung kinh day");
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
+// router.get("/:test", authorizationToken, (req, res) => {
+//   // http://localhost/test/
+//   try {
+//     const userDto = req.params;
+//     res.status(200).json("cung kinh day");
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 export default router;

@@ -1,4 +1,5 @@
 import employeeService from "../services/employeeService.js";
+import HttpError from "../utils/HttpError.js";
 import { isEmail } from "../validate/validate.js";
 
 const get = async (data) => {
@@ -56,7 +57,9 @@ const create = async (data) => {
     findOne = await employeeService.getOne({ phone: data.phone });
   }
   const EmailUser = employeeService.userEmail(data);
+
   const PhoneUser = employeeService.userPhone(data);
+
   if (findOne === null) {
     if (data?.email && data.phone) {
       result = await employeeService.create(data);
@@ -69,18 +72,65 @@ const create = async (data) => {
   return result;
 };
 
-const update = async (data) => {
-  let result;
-  const findOne = await employeeService.getOne({
-    $or: [{ email: data.email }, { phone: data.email }],
-  });
-  if (findOne) {
-    await employeeService.update({ _id: findOne._id }, data);
-    result = await employeeService.getOne({
-      $or: [{ email: data.email }, { phone: data.email }],
+const preUpdate = async (data) => {
+  const findClient = await employeeService.findOne({ _id: data._id });
+
+  // Check email and phone number
+  if (data.email && data.phone) {
+    const findAll = await employeeService.find({
+      $or: [{ email: data.email }, { phone: data.phone }],
     });
+    if (findAll.length == 0) {
+      return update(data);
+    } else if (
+      findAll.length === 1 &&
+      String(findAll[0]._id) == String(findClient._id)
+    ) {
+      return update(data);
+    } else
+      throw new HttpError(
+        "Email/Phone number already exists, can not update!",
+        400
+      );
   }
-  return result;
+
+  // Check email only
+  else if (data.email) {
+    const findAll = await employeeService.find({ email: data.email });
+    console.log(
+      "🚀 ~ file: employeeController.js:99 ~ preUpdate ~ findAll:",
+      findAll
+    );
+
+    if (findAll.length == 0) {
+      return update(data);
+    } else if (
+      findAll.length === 1 &&
+      String(findAll[0]._id) == String(findClient._id)
+    ) {
+      return update(data);
+    } else throw new HttpError("Email already exists, can not update!", 401);
+  }
+
+  // Check phone number only
+  else if (data.phone) {
+    const findAll = await employeeService.find({ phone: data.phone });
+
+    if (findAll.length == 0) {
+      return update(data);
+    } else if (
+      findAll.length === 1 &&
+      String(findAll[0]._id) == String(findClient._id)
+    ) {
+      return update(data);
+    } else
+      throw new HttpError("Phone number already exists, can not update!", 402);
+  } else throw new HttpError("Email & phone can not empty!", 403);
+};
+
+const update = async (data) => {
+  await employeeService.update({ _id: data._id }, data);
+  return await employeeService.getOne({ _id: data._id });
 };
 
 const del = async (data) => {
@@ -93,4 +143,4 @@ const restore = async (data) => {
   return await employeeService.getOne({ _id: data });
 };
 
-export default { get, create, update, del, getOne, search, restore };
+export default { get, create, update, del, getOne, search, restore, preUpdate };

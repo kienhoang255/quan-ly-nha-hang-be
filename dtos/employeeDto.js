@@ -49,6 +49,7 @@ const create = (reqBody) => {
 
 const update = (reqBody) => {
   return {
+    _id: reqBody._id,
     username: reqBody.username,
     avatar: reqBody.avatar,
     email: reqBody.email,

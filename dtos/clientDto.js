@@ -4,8 +4,8 @@ const create = (reqBody) => {
 };
 
 const update = (reqBody) => {
-  const { username, email, phone, password, address } = reqBody;
-  return { username, email, phone, password, address };
+  const { username, email, phone, address, avatar, sex, birth, _id } = reqBody;
+  return { username, email, phone, address, avatar, sex, birth, _id };
 };
 
 const login = (reqBody) => {

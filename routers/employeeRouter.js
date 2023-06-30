@@ -70,10 +70,10 @@ router.put("/restore/:_id", async (req, res) => {
 router.put("/", employeeValidate.checkExistId, async (req, res) => {
   try {
     const updateDto = employeeDto.update(req.body);
-    const data = await employeeController.update(updateDto);
+    const data = await employeeController.preUpdate(updateDto);
     res.status(200).json({ data, message: "success" });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 

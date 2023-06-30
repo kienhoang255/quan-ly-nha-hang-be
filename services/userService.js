@@ -45,6 +45,8 @@ const findOne = async (data) => {
   return await UserModel.findOne(data);
 };
 
+const find = async (data) => await UserModel.find(data);
+
 export default {
   userEmail,
   userPhone,
@@ -52,4 +54,5 @@ export default {
   findOneUserService,
   findOneAndUpdate,
   findOne,
+  find,
 };

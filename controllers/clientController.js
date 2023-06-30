@@ -41,9 +41,9 @@ const createWalkInGuest = async (data) => {
 };
 
 const findId = async (data) => {
-  const { username, email, phone, address, sex, birth } =
+  const { username, email, phone, address, sex, birth, createdAt, _id } =
     await clientService.findOne(data);
-  return { username, email, phone, address, sex, birth };
+  return { username, email, phone, address, sex, birth, createdAt, _id };
 };
 
 const login = async (data) => {
@@ -91,6 +91,72 @@ const get = async (data) => {
   return { username };
 };
 
+const preUpdate = async (data) => {
+  const findClient = await clientService.findOne({ _id: data._id });
+
+  // Check email and phone number
+  if (data.email && data.phone) {
+    const findAll = await clientService.find({
+      $or: [{ email: data.email }, { phone: data.phone }],
+    });
+    if (findAll.length == 0) {
+      return update(data);
+    } else if (
+      findAll.length === 1 &&
+      String(findAll[0]._id) == String(findClient._id)
+    ) {
+      return update(data);
+    } else
+      throw new HttpError(
+        "Email/Phone number already exists, can not update!",
+        400
+      );
+  }
+
+  // Check email only
+  else if (data.email) {
+    const findAll = await clientService.find({ email: data.email });
+
+    if (findAll.length == 0) {
+      return update(data);
+    } else if (
+      findAll.length === 1 &&
+      String(findAll[0]._id) == String(findClient._id)
+    ) {
+      return update(data);
+    } else throw new HttpError("Email already exists, can not update!", 401);
+  }
+
+  // Check phone number only
+  else if (data.phone) {
+    const findAll = await clientService.find({ phone: data.phone });
+
+    if (findAll.length == 0) {
+      return update(data);
+    } else if (
+      findAll.length === 1 &&
+      String(findAll[0]._id) == String(findClient._id)
+    ) {
+      return update(data);
+    } else
+      throw new HttpError("Phone number already exists, can not update!", 402);
+  } else throw new HttpError("Email & phone can not empty!", 403);
+};
+
+const update = async (data) => {
+  return await clientService.update(
+    { _id: data._id },
+    {
+      username: data.username,
+      phone: data.phone,
+      email: data.email,
+      address: data.address,
+      birth: data.birth,
+      sex: data.sex,
+    }
+  );
+};
+
 export default {
   create,
   createWalkInGuest,
@@ -99,4 +165,6 @@ export default {
   updatePassword,
   login,
   get,
+  update,
+  preUpdate,
 };

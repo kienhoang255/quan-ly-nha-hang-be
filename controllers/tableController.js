@@ -2,6 +2,7 @@ import { TableModel } from "../models/TableModel.js";
 import bookingService from "../services/bookingService.js";
 import tableImageService from "../services/tableImageService.js";
 import tableService from "../services/tableService.js";
+import HttpError from "../utils/HttpError.js";
 import tableImageController from "./tableImageController.js";
 
 const get = async (data) => {
@@ -34,11 +35,68 @@ const search = async (data) => {
     const timeEnd = `${Number(splitTime[0]) + 4}${splitTime[1]}`;
 
     const findBooking = await bookingService.find({
-      $or: [
-        { timeCheckIn: { $gte: timeStart, $lte: timeEnd } },
-        { timeCheckOut: { $gte: timeStart, $lte: timeEnd } },
+      $and: [
+        { status: "pending" },
+        {
+          $or: [
+            { timeCheckIn: { $gte: timeStart, $lte: timeEnd } },
+            { timeCheckOut: { $gte: timeStart, $lte: timeEnd } },
+          ],
+          dateCheckIn: dateCheckIn,
+        },
       ],
-      dateCheckIn: dateCheckIn,
+    });
+
+    findBooking.forEach((book) => {
+      let count = 0;
+      result.forEach((table) => {
+        if (table._id.toString() === book.id_table) {
+          result.splice(count, 1);
+        }
+        count++;
+      });
+    });
+  }
+  return result;
+};
+
+const searchByFilter = async (data) => {
+  const { timeCheckIn, dateCheckIn, options, stage, numOfPeople } = data;
+
+  const findTable = await tableImageController.find(options);
+
+  let result = [];
+
+  // if (stage && numOfPeople) {
+  //   result = findTable.filter(
+  //     (e) => e.stage === stage && e.numOfPeople >= numOfPeople
+  //   );
+  // } else if (!stage && numOfPeople) {
+  //   result = findTable.filter((e) => e.numOfPeople >= numOfPeople);
+  // } else if (stage && !numOfPeople) {
+  //   result = findTable.filter((e) => e.stage === stage);
+  // } else
+  result = findTable;
+
+  if (timeCheckIn && dateCheckIn) {
+    const splitTime = timeCheckIn?.split(":");
+    const timeStart = `${
+      splitTime[0] < 10 ? `0${splitTime[0]}` : splitTime[0]
+    }${splitTime[1]}`;
+
+    const timeEnd = `${Number(splitTime[0]) + 4}${splitTime[1]}`;
+
+    const findBooking = await bookingService.find({
+      $and: [
+        { status: "pending" },
+        {
+          $or: [
+            { timeCheckIn: { $gte: timeStart, $lte: timeEnd } },
+            { timeCheckOut: { $gte: timeStart, $lte: timeEnd } },
+          ],
+          dateCheckIn: dateCheckIn,
+        },
+      ],
     });
 
     findBooking.forEach((book) => {
@@ -137,23 +195,19 @@ const findOneAndDelete = async (id) => {
 };
 
 const checkStatus = async (data) => {
-  let result;
   const findTable = await tableService.findOne({
     _id: data.id_table,
   });
   if (findTable.status === "using") {
-    // if (findTable.special === "true") {
-    //   result = true;
-    // } else {
-    result = false;
-    // }
+    throw new HttpError("Table is using", 400);
   } else {
-    result = true;
+    return true;
   }
-  return result;
 };
 
 const getDistinct = async (data) => await tableService.findDistinct(data);
+
+const findOne = async (id) => await tableService.findOne({ _id: id });
 
 export default {
   get,
@@ -164,4 +218,6 @@ export default {
   updateStatus,
   checkStatus,
   getDistinct,
+  findOne,
+  searchByFilter,
 };

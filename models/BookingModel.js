@@ -8,7 +8,7 @@ const BookingSchema = new mongoose.Schema(
     timeCheckOut: { type: String },
     dateCheckIn: { type: String },
     specialRequired: { type: String },
-    status: { type: Boolean, default: false },
+    status: { type: String, default: "pending" },
   },
   { timestamps: true }
 );

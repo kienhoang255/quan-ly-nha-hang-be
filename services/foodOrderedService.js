@@ -17,6 +17,9 @@ const find = async (data) => {
   return await FoodOrderedModel.find(data);
 };
 
+const findOneAndUpdate = async (id, data) =>
+  await FoodOrderedModel.findOneAndUpdate(id, data);
+
 const insertMulti = async (data) => {
   return await FoodOrderedModel.insertMany(data).then((value) => {
     return value;
@@ -38,4 +41,5 @@ export default {
   findOneAndDelete,
   findOne,
   insertMulti,
+  findOneAndUpdate,
 };

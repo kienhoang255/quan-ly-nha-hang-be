@@ -1,7 +1,8 @@
 import { UserModel } from "../models/UserModel.js";
 
 const userEmail = (data) => {
-  const { username, email, avatar, password, status, job, address } = data;
+  const { username, email, avatar, password, status, job, address, role } =
+    data;
   const clientEmail = {
     username,
     email,
@@ -10,12 +11,14 @@ const userEmail = (data) => {
     status,
     job,
     address,
+    role,
   };
   return clientEmail;
 };
 
 const userPhone = (data) => {
-  const { username, phone, password, avatar, status, job, address } = data;
+  const { username, phone, password, avatar, status, job, address, role } =
+    data;
   const clientPhone = {
     username,
     avatar,
@@ -24,6 +27,7 @@ const userPhone = (data) => {
     password,
     status,
     job,
+    role,
     address,
   };
   return clientPhone;
@@ -55,6 +59,12 @@ const del = async (id, data) => {
   return await UserModel.findOneAndDelete(id, data);
 };
 
+const findOne = async (data) => {
+  return await UserModel.findOne(data);
+};
+
+const find = async (data) => await UserModel.find(data);
+
 export default {
   get,
   getOne,
@@ -64,4 +74,6 @@ export default {
   update,
   del,
   count,
+  findOne,
+  find,
 };

@@ -12,3 +12,8 @@ export const changePassword = (reqBody) => {
   const { _id, password } = reqBody;
   return { _id, password };
 };
+
+export const updateDto = (reqBody) => {
+  const { username, email, phone, address, avatar, _id } = reqBody;
+  return { username, email, phone, address, avatar, _id };
+};

@@ -80,6 +80,24 @@ router.put("/cancel", foodOrderedValidate.update, async (req, res) => {
   }
 });
 
+router.post("/r/cancel/", async (req, res) => {
+  try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
+    console.log(req.body);
+    const foodOrdered = await FOController.requestCancelFood(req.body);
+    pusher.trigger("FO", "FO_cancel-request", { foodOrdered });
+    res.status(200).json(foodOrdered);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 // router.put("/cancelAdmin", foodOrderedValidate.create, async (req, res) => {});
 
 router.get("/bill/:id_bill", async (req, res) => {
@@ -90,6 +108,30 @@ router.get("/bill/:id_bill", async (req, res) => {
       return res.status(200).json(getFoodByBill);
     }
     return res.status(400).json("You haven't ordered anything yet");
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.post("/cancelRequest/reject/:_id", async (req, res) => {
+  try {
+    const data = await FOController.updateCancelRequest(
+      req.params._id,
+      "reject"
+    );
+    return res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.post("/cancelRequest/confirm/:_id", async (req, res) => {
+  try {
+    const data = await FOController.updateCancelRequest(
+      req.params._id,
+      "confirm"
+    );
+    return res.status(200).json(data);
   } catch (error) {
     res.status(500).json(error);
   }

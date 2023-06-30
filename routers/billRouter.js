@@ -70,20 +70,19 @@ router.post("/", billValidate.createBillValidate, async (req, res) => {
     });
     const billDto = BillDto.create(req.body);
     const checkStatus = await TableController.checkStatus(billDto);
-    if (checkStatus) {
-      const createdBill = await BillController.create(billDto);
-      pusher.trigger("bill", "checkIn-event", {
-        bill: createdBill.createBill1,
-        table: createdBill.table,
-      });
-      return res.status(200).json(createdBill);
-    } else {
-      return res
-        .status(400)
-        .json({ messageErr: "Table is using, can't check in" });
+    const checkIsBooking = await BillController.checkIsBooking(billDto);
+    if (checkIsBooking) {
+      if (checkStatus) {
+        const createdBill = await BillController.create(billDto);
+        pusher.trigger("bill", "checkIn-event", {
+          bill: createdBill.createBill1,
+          table: createdBill.table,
+        });
+        return res.status(200).json(createdBill);
+      }
     }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(error.code || 500).json(error.message || error);
   }
 });
 
@@ -99,14 +98,18 @@ router.post(
         cluster: process.env.pusher_cluster,
         useTLS: true,
       });
-      const createdBill = await BillController.createWalkInGuest(req.body);
-      pusher.trigger("bill", "checkIn-event", {
-        bill: createdBill.createBill,
-        table: createdBill.table,
-      });
-      res.status(200).json(createdBill);
+      const checkStatus = await TableController.checkStatus(req.body);
+      const checkIsBooking = await BillController.checkIsBooking(req.body);
+      if (checkIsBooking && checkStatus) {
+        const createdBill = await BillController.createWalkInGuest(req.body);
+        pusher.trigger("bill", "checkIn-event", {
+          bill: createdBill.createBill,
+          table: createdBill.table,
+        });
+        res.status(200).json(createdBill);
+      }
     } catch (error) {
-      res.status(500).json(error);
+      res.status(error.code || 500).json(error.message || error);
     }
   }
 );
@@ -156,15 +159,20 @@ router.patch("/", async (req, res) => {
 
 router.post("/change_table", billValidate.changeTable, async (req, res) => {
   try {
+    const pusher = new Pusher({
+      appId: process.env.pusher_app_id,
+      key: process.env.pusher_key,
+      secret: process.env.pusher_secret,
+      cluster: process.env.pusher_cluster,
+      useTLS: true,
+    });
     const dto = billDto.changeTable(req.body);
-    const changeTable = await BillController.changeTable(dto);
-
-    res.status(200).json(changeTable);
+    const data = await BillController.changeTable(dto);
+    pusher.trigger("bill", "changeTable-event", { data });
+    res.status(200).json(data);
   } catch (error) {
     res.status(error.code || 500).json(error.message || error);
   }
 });
-
-router.post("/update-bill");
 
 export default router;

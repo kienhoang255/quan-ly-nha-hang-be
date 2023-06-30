@@ -7,6 +7,7 @@ const FoodOrderedSchema = new mongoose.Schema(
     id_food: { type: String },
     quantity: { type: Number },
     status: { type: String, default: "cooking" },
+    cancelRequest: { type: String },
     price: { type: Number },
     nameTable: { type: String },
   },

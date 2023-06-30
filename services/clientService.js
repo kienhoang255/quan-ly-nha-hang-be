@@ -33,8 +33,8 @@ const update = async (id, data) => {
   return await ClientModel.findOneAndUpdate(id, data);
 };
 
-const find = async () => {
-  return await ClientModel.find();
+const find = async (data) => {
+  return await ClientModel.find(data);
 };
 
 const findOne = async (data) => {

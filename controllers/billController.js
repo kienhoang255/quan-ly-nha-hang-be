@@ -1,8 +1,11 @@
+import moment from "moment/moment.js";
 import billService from "../services/billService.js";
+import bookingService from "../services/bookingService.js";
 import clientService from "../services/clientService.js";
 import foodOrderedService from "../services/foodOrderedService.js";
 import foodService from "../services/foodService.js";
 import tableService from "../services/tableService.js";
+import HttpError from "../utils/HttpError.js";
 import { ClientController } from "./index.js";
 
 const search = async (q, date, page) => {
@@ -101,12 +104,68 @@ const client = (email) => {
   return result;
 };
 
+const checkIsBooking = async (data) => {
+  const timeCheckInLess = moment([]).subtract(30, "minute").format("HHmm");
+  const timeCheckInGreater = moment([]).add(4, "hour").format("HHmm");
+  const dateCheckIn = moment([]).format("YYYY-MM-DD");
+
+  const findBooking = await bookingService.find({
+    id_table: data.id_table,
+    dateCheckIn,
+    timeCheckIn: { $gte: timeCheckInLess, $lte: timeCheckInGreater },
+  });
+  if (findBooking.length > 0) {
+    const findClient = await ClientController.findOne(data);
+    if (findClient) {
+      const findBooking = await bookingService.findOne({
+        id_client: findClient._id,
+        id_table: data.id_table,
+        dateCheckIn,
+        timeCheckIn: { $gte: timeCheckInLess, $lte: timeCheckInGreater },
+      });
+      return findBooking;
+    } else throw new HttpError("Table has been booked", 401);
+  } else {
+    return true;
+  }
+
+  // const findClient = await ClientController.findOne(data);
+  // if (findClient) {
+  //   const findBooking = await bookingService.findOne({
+  //     id_client: findClient._id,
+  //     id_table: data.id_table,
+  //     dateCheckIn,
+  //     timeCheckIn: { $gte: timeCheckInLess, $lte: timeCheckInGreater },
+  //   });
+  //   console.log(
+  //     "🚀 ~ file: billController.js:119 ~ checkIsBooking ~ findBooking:",
+  //     findBooking
+  //   );
+
+  //   if (!findBooking) throw new HttpError("Table has been booked", 401);
+  //   else return false;
+  // } else throw new HttpError("Table has been booked", 401);
+};
+
 const create = async (data) => {
   let result;
+  const timeCheckInLess = moment([]).subtract(30, "minute").format("HHmm");
+  const timeCheckInGreater = moment([]).add(4, "hour").format("HHmm");
+  const dateCheckIn = moment([]).format("YYYY-MM-DD");
   const findClient = await ClientController.findOne(data);
   if (findClient) {
     const newData = { id_client: findClient._id, id_table: data.id_table };
     const createBill1 = await findTableAndCreate(newData);
+    await bookingService.update(
+      {
+        id_client: findClient._id,
+        status: "pending",
+        id_table: data.id_table,
+        dateCheckIn: dateCheckIn,
+        timeCheckIn: { $gte: timeCheckInLess, $lte: timeCheckInGreater },
+      },
+      { status: "used" }
+    );
     await tableService.findOneAndUpdate(
       { _id: data.id_table },
       // { status: "using", $push: { id_bill: createBill1._id } }
@@ -262,6 +321,10 @@ const getAllInfo = async (data) => {
   return { name, stage, email: email || phone || username, foodName };
 };
 
+const getAllBillByIdClient = async (id) => {
+  return await tableService.find({ id_client: id });
+};
+
 export default {
   create,
   createWalkInGuest,
@@ -277,4 +340,6 @@ export default {
   getBillByIdBill,
   search,
   getAllInfo,
+  checkIsBooking,
+  getAllBillByIdClient,
 };

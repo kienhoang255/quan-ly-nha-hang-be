@@ -18,9 +18,27 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/find/:_id", async (req, res) => {
+  try {
+    const getTable = await TableController.findOne(req.params._id);
+    res.status(200).json(getTable);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.get("/search", async (req, res) => {
   try {
     const getTable = await TableController.search(req.query);
+    res.status(200).json(getTable);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get("/search/filter", async (req, res) => {
+  try {
+    const getTable = await TableController.searchByFilter(req.query);
     res.status(200).json(getTable);
   } catch (error) {
     res.status(500).json(error);

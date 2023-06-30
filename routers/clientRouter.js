@@ -53,6 +53,16 @@ router.post("/updatePassword", loginClientValidate, async (req, res) => {
   }
 });
 
+router.put("/", async (req, res) => {
+  try {
+    const clientDto = ClientDto.update(req.body);
+    const client = await ClientController.preUpdate(clientDto);
+    return res.status(200).json(client);
+  } catch (error) {
+    res.status(error.code || 500).json(error.message || error);
+  }
+});
+
 router.get("/:_id", async (req, res) => {
   try {
     const clientDto = ClientDto.find(req.params);

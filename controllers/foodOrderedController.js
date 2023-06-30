@@ -58,12 +58,29 @@ const updateCancel = async (data) => {
   });
 };
 
+const requestCancelFood = async (data) => {
+  const update = await foodOrderedService.findOneAndUpdate(
+    { _id: data._id },
+    { cancelRequest: "request" }
+  );
+  const { name } = await foodService.findOne({ _id: update.id_food });
+  const food = await foodOrderedService.findOne({ _id: data._id });
+  return { food, nameFood: name, nameTable: data.nameTable };
+};
+
 const updateCancelAdmin = async (data) => {
   return await foodOrderedService.updateStatus(data, "cancel");
 };
 
 const getFoodByBill = async (data) => {
   return await foodOrderedService.find(data);
+};
+
+const updateCancelRequest = async (_id, option) => {
+  return await foodOrderedService.findOneAndUpdate(
+    { _id },
+    { cancelRequest: option }
+  );
 };
 
 export default {
@@ -75,4 +92,6 @@ export default {
   getFoodByBill,
   find,
   findByStatus,
+  requestCancelFood,
+  updateCancelRequest,
 };
