@@ -17,18 +17,25 @@ const create = async (data) => {
   const findClient = await findOne(data);
   const EmailClient = clientService.clientEmail(data);
   const PhoneClient = clientService.clientPhone(data);
-  if (findClient === null) {
+  if (!findClient) {
     if (!isEmail(data.email)) {
       return await clientService.create({
         ...PhoneClient,
-        verification: "true",
       });
     } else {
       return await clientService.create({
         ...EmailClient,
-        verification: "true",
       });
     }
+  } else if (findClient && !checkVerification(findClient)) {
+    await updatePassword(data);
+    return await clientService.update(
+      { _id: findClient._id },
+      {
+        username: data.username,
+        verification: "true",
+      }
+    );
   } else throw new HttpError("Account already exist", 400);
 };
 
@@ -36,7 +43,7 @@ const createWalkInGuest = async (data) => {
   return await clientService.create({
     username: "Khách",
     password: "12341234",
-    verification: "true",
+    verification: "false",
   });
 };
 

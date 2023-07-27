@@ -71,6 +71,7 @@ router.post("/", billValidate.createBillValidate, async (req, res) => {
     const billDto = BillDto.create(req.body);
     const checkStatus = await TableController.checkStatus(billDto);
     const checkIsBooking = await BillController.checkIsBooking(billDto);
+
     if (checkIsBooking) {
       if (checkStatus) {
         const createdBill = await BillController.create(billDto);

@@ -116,11 +116,17 @@ const create = async (data) => {
   const { numOfPeople, stage, image1, image2, image3, image4, options } = data;
   const findTable = await tableService.findStage(stage);
   let count = 0;
-  findTable.forEach((e) => (count += 1));
+  let numberMissing;
+  findTable.forEach((e) => {
+    count += 1;
+    if (e.name !== `${stage}-${count}`) {
+      numberMissing = count;
+    }
+  });
   const newData = {
     numOfPeople,
     stage,
-    name: `${stage}-${count + 1}`,
+    name: `${stage}-${numberMissing || count + 1}`,
   };
   const table = await tableService.create(newData);
   const tableImage = await tableImageController.create({
@@ -145,19 +151,46 @@ const update = async (data) => {
 
   const checkStage = await tableService.findOne({ _id: _id });
 
-  if (checkStage.stage === stage) {
-    await tableService.findOneAndUpdate(
-      { _id: data._id },
-      { numOfPeople: data.numOfPeople }
-    );
+  if (Number(checkStage.stage) === Number(stage)) {
+    const findStage = await tableService.findStage(stage);
+
+    let count = 0;
+    let numberMissing;
+    findStage.forEach((e) => {
+      count += 1;
+      if (e.name !== `${stage}-${count}`) {
+        if (!numberMissing) numberMissing = count;
+      }
+    });
+    if (numberMissing) {
+      await tableService.findOneAndUpdate(
+        { _id: data._id },
+        {
+          numOfPeople: data.numOfPeople,
+          name: `${stage}-${numberMissing}`,
+        }
+      );
+    } else
+      await tableService.findOneAndUpdate(
+        { _id: data._id },
+        {
+          numOfPeople: data.numOfPeople,
+        }
+      );
   } else {
     const findStage = await tableService.findStage(stage);
     let count = 0;
-    findStage.forEach((e) => (count += 1));
+    let numberMissing;
+    findStage.forEach((e) => {
+      count += 1;
+      if (e.name !== `${stage}-${count}`) {
+        numberMissing = count;
+      }
+    });
     const newData = {
       numOfPeople,
       stage,
-      name: `${stage}-${count + 1}`,
+      name: `${stage}-${numberMissing || count + 1}`,
     };
     await tableService.findOneAndUpdate({ _id: data._id }, newData);
   }

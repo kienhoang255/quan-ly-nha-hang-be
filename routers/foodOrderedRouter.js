@@ -89,7 +89,6 @@ router.post("/r/cancel/", async (req, res) => {
       cluster: process.env.pusher_cluster,
       useTLS: true,
     });
-    console.log(req.body);
     const foodOrdered = await FOController.requestCancelFood(req.body);
     pusher.trigger("FO", "FO_cancel-request", { foodOrdered });
     res.status(200).json(foodOrdered);

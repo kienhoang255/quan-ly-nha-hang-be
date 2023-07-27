@@ -7,6 +7,7 @@ const BillSchema = mongoose.Schema({
   status: { type: String, default: "empty" },
   stage: { type: Number },
   special: { type: String },
+  visible: { type: Boolean, default: true },
 });
 
 export const TableModel = mongoose.model("table", BillSchema);

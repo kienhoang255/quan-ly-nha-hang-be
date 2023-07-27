@@ -1,6 +1,6 @@
 const create = (reqBody) => {
   const { username, email, phone, password, address } = reqBody;
-  return { username, email, phone, password, address };
+  return { username, email, phone, password, address, verification: "true" };
 };
 
 const update = (reqBody) => {

@@ -106,16 +106,21 @@ const client = (email) => {
 
 const checkIsBooking = async (data) => {
   const timeCheckInLess = moment([]).subtract(30, "minute").format("HHmm");
+
   const timeCheckInGreater = moment([]).add(4, "hour").format("HHmm");
+
   const dateCheckIn = moment([]).format("YYYY-MM-DD");
 
   const findBooking = await bookingService.find({
     id_table: data.id_table,
     dateCheckIn,
     timeCheckIn: { $gte: timeCheckInLess, $lte: timeCheckInGreater },
+    status: "pending",
   });
+
   if (findBooking.length > 0) {
     const findClient = await ClientController.findOne(data);
+
     if (findClient) {
       const findBooking = await bookingService.findOne({
         id_client: findClient._id,
@@ -123,7 +128,9 @@ const checkIsBooking = async (data) => {
         dateCheckIn,
         timeCheckIn: { $gte: timeCheckInLess, $lte: timeCheckInGreater },
       });
-      return findBooking;
+      if (String(findClient._id) === findBooking?.id_client) {
+        return findBooking;
+      } else throw new HttpError("Table has been booked", 401);
     } else throw new HttpError("Table has been booked", 401);
   } else {
     return true;
@@ -286,10 +293,21 @@ const changeTable = async (data) => {
     }
   );
 
-  await tableService.findOneAndUpdate(
+  const tableUpdate = await tableService.findOneAndUpdate(
     { _id: data.id_table_to },
     { status: "using", id_bill: data.id_bill }
   );
+
+  const updateFoodOrdered = await foodOrderedService.find({
+    id_bill: data.id_bill,
+  });
+
+  updateFoodOrdered?.forEach((e) => {
+    foodOrderedService.findOneAndUpdate(
+      { _id: e._id },
+      { nameTable: tableUpdate.name }
+    );
+  });
 
   const tableTo = await tableService.findOne({ _id: data.id_table_to });
   const table = await tableService.findOne({ _id: data.id_table });

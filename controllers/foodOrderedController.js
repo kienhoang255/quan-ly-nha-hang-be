@@ -30,11 +30,11 @@ const findOne = async (data) => {
 
 const updateServed = async (data) => {
   let result;
-  const { id_table, id_food } = await foodOrderedService.updateStatus(
+  const { id_food, id_bill } = await foodOrderedService.updateStatus(
     data,
     "served"
   );
-  const { name: nameTable } = await tableService.findOne({ id_table });
+
   const foodOrdered = await foodOrderedService.findOne({
     _id: data.id_foodOrdered,
   });
@@ -44,7 +44,7 @@ const updateServed = async (data) => {
   result = {
     foodOrdered,
     nameFood,
-    nameTable,
+    nameTable: foodOrdered.nameTable,
     time: foodOrdered.updatedAt,
     id_food,
   };

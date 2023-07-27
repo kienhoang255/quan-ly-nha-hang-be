@@ -7,7 +7,7 @@ const create = (data) => {
 };
 
 const find = async (data) => {
-  return await TableModel.find(data);
+  return await TableModel.find(data).sort({ name: 1 });
 };
 
 const findOne = async (data) => {
@@ -37,7 +37,7 @@ const findOneAndUpdate = (filter, data) => {
 };
 
 const findStage = (stage) => {
-  return TableModel.find({ stage: stage });
+  return TableModel.find({ stage: stage }).sort({ name: 1 });
 };
 
 const findDistinct = async (option) => await TableModel.distinct(option);
